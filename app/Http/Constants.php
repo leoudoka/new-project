@@ -7,7 +7,7 @@
  */
 
 /**
- * Class EntityType
+ * Class UserType
  *
  * @package App\Http
  */
@@ -17,6 +17,8 @@ final class UserType
     const SUPER_ADMIN_ID = 1;
 
     const SUPER_ADMIN = '1';
+    const EMPLOYER = '10';
+	const APPLICANT = '20';
 
     /**
      * Returns respective value.
@@ -31,6 +33,12 @@ final class UserType
         switch ($x) {
             case '1':
                 $value = __('super-admin');
+                break;
+            case '10':
+                $value = __('employer');
+                break;
+            case '20':
+                $value = __('applicant');
                 break;
         }
 
@@ -50,6 +58,12 @@ final class UserType
         switch ($x) {
             case '1':
                 $value = __('Super Admin');
+                break;
+            case '10':
+                $value = __('Employer');
+                break;
+            case '20':
+                $value = __('Applicant');
                 break;
         }
 
@@ -151,5 +165,79 @@ final class ActiveStatus
         }
 
         return $value;
+    }
+}
+
+/**
+ * Class VettingStatus
+ */
+final class VettingStatus
+{
+    const ACCEPTED = '10';
+    const PENDING = '20';
+    const REJECTED = '30';
+
+    const SET_ACCEPTED = 'accepted';
+    const SET_PENDING = 'pending';
+    const SET_REJECTED = 'rejected';
+
+    /**
+     * Returns respective value.
+     *
+     * @param $x
+     *
+     * @return null
+     */
+    public static function getValue($statusCode)
+    {
+        $value = null;
+        switch ($statusCode) {
+            case '10':
+                $value = __(OrderStatus::SET_ACCEPTED);
+                break;
+            case '20':
+                $value = __(OrderStatus::SET_PENDING);
+                break;
+            case '30':
+                $value = __(OrderStatus::SET_REJECTED);
+                break;
+        }
+
+        return $value;
+    }
+
+    /**
+     * Returns respective value.
+     * 
+     * @return array|null
+     */
+    public static function setValue($statusCode)
+    {
+        $value = null;
+        switch ($statusCode) {
+            case OrderStatus::SET_ACCEPTED:
+                $value = OrderStatus::ACCEPTED;
+                break;
+            case OrderStatus::SET_PENDING:
+                $value = OrderStatus::PENDING;
+                break;
+            case OrderStatus::SET_REJECTED:
+                $value = OrderStatus::REJECTED;
+                break;
+        }
+
+        return $value;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getAll()
+    {
+        return [
+            self::ACCEPTED => OrderStatus::getValue(self::ACCEPTED),
+            self::PENDING => OrderStatus::getValue(self::PENDING),
+            self::REJECTED => OrderStatus::getValue(self::REJECTED),
+        ];
     }
 }
