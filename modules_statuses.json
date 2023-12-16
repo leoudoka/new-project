@@ -1,0 +1,8 @@
+{
+    "Blog": true,
+    "User": true,
+    "Job": true,
+    "Course": true,
+    "Organization": true,
+    "Admin": true
+}
