@@ -1,4 +1,4 @@
-## About Smarthub
+## About Smart Hub
 
 The Smart Hub is a SaaS web service where users can get vetted for a job and
 organizations show interest for talents in the industry vetted by Smarthub
