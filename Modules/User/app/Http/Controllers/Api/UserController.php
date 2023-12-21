@@ -1,31 +1,31 @@
 <?php
 
-namespace Modules\Job\app\Http\Controllers;
+namespace Modules\User\app\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-use Modules\Job\Repositories\JobRepository;
-use Modules\Job\Services\JobService;
+use Modules\User\Repositories\UserRepository;
+use Modules\User\Services\UserService;
 
-class JobController extends Controller
+class UserController extends Controller
 {
     /**
-     * The job service
+     * The user service
      */
-    protected JobService $jobService;
+    protected UserService $userService;
 
     /**
-     * JobController constructor.
+     * UserController constructor.
      *
-     * @param JobRepository $jobRepository
+     * @param UserRepository $userRepository
      */
     public function __construct(
-        JobRepository $jobRepository
+        UserRepository $userRepository
     ) {
-        $this->jobService = new JobService($jobRepository);
+        $this->userService = new UserService($userRepository);
     }
 
     /**
@@ -33,7 +33,7 @@ class JobController extends Controller
      */
     public function index()
     {
-        return view('job::index');
+        return view('user::index');
     }
 
     /**
@@ -41,7 +41,7 @@ class JobController extends Controller
      */
     public function create()
     {
-        return view('job::create');
+        return view('user::create');
     }
 
     /**
@@ -57,7 +57,7 @@ class JobController extends Controller
      */
     public function show($id)
     {
-        return view('job::show');
+        return view('user::show');
     }
 
     /**
@@ -65,7 +65,7 @@ class JobController extends Controller
      */
     public function edit($id)
     {
-        return view('job::edit');
+        return view('user::edit');
     }
 
     /**

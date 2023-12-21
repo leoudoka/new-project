@@ -7,8 +7,27 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
+use Modules\Organization\Repositories\OrganizationRepository;
+use Modules\Organization\Services\OrganizationService;
+
 class OrganizationController extends Controller
 {
+    /**
+     * The organization service
+     */
+    protected OrganizationService $organizationService;
+
+    /**
+     * OrganizationController constructor.
+     *
+     * @param OrganizationRepository $organizationRepository
+     */
+    public function __construct(
+        OrganizationRepository $organizationRepository
+    ) {
+        $this->organizationService = new OrganizationService($organizationRepository);
+    }
+
     /**
      * Display a listing of the resource.
      */

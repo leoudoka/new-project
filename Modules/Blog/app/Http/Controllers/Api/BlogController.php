@@ -1,31 +1,31 @@
 <?php
 
-namespace Modules\Job\app\Http\Controllers;
+namespace Modules\Blog\app\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-use Modules\Job\Repositories\JobRepository;
-use Modules\Job\Services\JobService;
+use Modules\Blog\Repositories\BlogRepository;
+use Modules\Blog\Services\BlogService;
 
-class JobController extends Controller
+class BlogController extends Controller
 {
     /**
-     * The job service
+     * The blog service
      */
-    protected JobService $jobService;
+    protected BlogService $blogService;
 
     /**
-     * JobController constructor.
+     * BlogController constructor.
      *
-     * @param JobRepository $jobRepository
+     * @param BlogRepository $blogRepository
      */
     public function __construct(
-        JobRepository $jobRepository
+        BlogRepository $blogRepository
     ) {
-        $this->jobService = new JobService($jobRepository);
+        $this->blogService = new BlogService($blogRepository);
     }
 
     /**
@@ -33,7 +33,7 @@ class JobController extends Controller
      */
     public function index()
     {
-        return view('job::index');
+        return view('blog::index');
     }
 
     /**
@@ -41,7 +41,7 @@ class JobController extends Controller
      */
     public function create()
     {
-        return view('job::create');
+        return view('blog::create');
     }
 
     /**
@@ -57,7 +57,7 @@ class JobController extends Controller
      */
     public function show($id)
     {
-        return view('job::show');
+        return view('blog::show');
     }
 
     /**
@@ -65,7 +65,7 @@ class JobController extends Controller
      */
     public function edit($id)
     {
-        return view('job::edit');
+        return view('blog::edit');
     }
 
     /**

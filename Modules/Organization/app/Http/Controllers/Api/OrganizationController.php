@@ -1,31 +1,31 @@
 <?php
 
-namespace Modules\Job\app\Http\Controllers;
+namespace Modules\Organization\app\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
-use Modules\Job\Repositories\JobRepository;
-use Modules\Job\Services\JobService;
+use Modules\Organization\Repositories\OrganizationRepository;
+use Modules\Organization\Services\OrganizationService;
 
-class JobController extends Controller
+class OrganizationController extends Controller
 {
     /**
-     * The job service
+     * The organization service
      */
-    protected JobService $jobService;
+    protected OrganizationService $organizationService;
 
     /**
-     * JobController constructor.
+     * OrganizationController constructor.
      *
-     * @param JobRepository $jobRepository
+     * @param OrganizationRepository $organizationRepository
      */
     public function __construct(
-        JobRepository $jobRepository
+        OrganizationRepository $organizationRepository
     ) {
-        $this->jobService = new JobService($jobRepository);
+        $this->organizationService = new OrganizationService($organizationRepository);
     }
 
     /**
@@ -33,7 +33,7 @@ class JobController extends Controller
      */
     public function index()
     {
-        return view('job::index');
+        return view('organization::index');
     }
 
     /**
@@ -41,7 +41,7 @@ class JobController extends Controller
      */
     public function create()
     {
-        return view('job::create');
+        return view('organization::create');
     }
 
     /**
@@ -57,7 +57,7 @@ class JobController extends Controller
      */
     public function show($id)
     {
-        return view('job::show');
+        return view('organization::show');
     }
 
     /**
@@ -65,7 +65,7 @@ class JobController extends Controller
      */
     public function edit($id)
     {
-        return view('job::edit');
+        return view('organization::edit');
     }
 
     /**

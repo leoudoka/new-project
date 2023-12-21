@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\Job\app\Http\Controllers;
+namespace Modules\Job\app\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
