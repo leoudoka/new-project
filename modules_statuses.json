@@ -3,6 +3,8 @@
     "User": true,
     "Job": true,
     "Course": true,
-    "Organization": true,
-    "Admin": true
+    "Admin": true,
+    "Contact": true,
+    "Applicant": true,
+    "Employer": true
 }
