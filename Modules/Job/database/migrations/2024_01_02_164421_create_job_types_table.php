@@ -20,9 +20,13 @@ return new class extends Migration
                 \JobTypeK::PART_TIME
             ])->unique();
             $table->string('description')->nullable();
-            $table->enum('status', [0, 1])->default(1);
-            $table->foreign('created_by')->references('id')->on('users');
+            $table->enum('status', [
+                \ActiveStatus::INACTIVE,
+                \ActiveStatus::ACTIVE
+            ])->default(\ActiveStatus::ACTIVE);
+            $table->bigInteger('created_by')->nullable();
             $table->timestamps();
+            $table->foreign('created_by')->references('id')->on('users')->onDelete('SET NULL');
         });
     }
 

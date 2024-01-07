@@ -26,15 +26,19 @@ return new class extends Migration
             $table->foreignIdFor(JobType::class)->nullable();
             $table->foreignId('country_id', 10)->nullable();
             $table->foreignId('state_id', 10)->nullable();
-            $table->string('experience_level')->nullable();
             $table->text('summary')->nullable();
             $table->longText('description');
             $table->string('remuneration')->nullable();
             $table->enum('featured', [0, 1])->default(0);
-            $table->enum('status', [10, 20, 30])->default(10);
+            $table->enum('status', [
+                \JobStatus::NEW,
+                \JobStatus::OPEN,
+                \JobStatus::CLOSED
+            ])->default(\JobStatus::NEW);
             $table->foreignIdFor(Employer::class);
-            $table->foreign('created_by')->references('id')->on('users');
+            $table->bigInteger('created_by')->nullable();
             $table->timestamps();
+            $table->foreign('created_by')->references('id')->on('users')->onDelete('SET NULL');
         });
     }
 

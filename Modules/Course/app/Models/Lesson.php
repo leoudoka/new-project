@@ -1,55 +1,37 @@
 <?php
 
-namespace Modules\Blog\app\Models;
+namespace Modules\Course\app\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 use App\Models\BaseModel;
 use App\Models\User;
 
-class Blog extends BaseModel
+class Lesson extends BaseModel
 {
-    /**
+     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'blogs';
+    protected $table = 'lessons';
 
     /**
      * The attributes that are mass assignable.
      */
     protected $fillable = [
+        'lesson_number',
+        'lesson_type',
         'title',
-        'slug',
-        'description',
-        'status',
+        'article',
+        'external_url',
+        'attachment_id',
+        'course_section_id',
         'created_by'
     ];
 
     /**
-     * Interact with the job category status.
-     */
-    protected function status(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value) => \ActiveStatus::getValue($value),
-            set: fn ($value) => \ActiveStatus::setValue($value),
-        );
-    }
-
-    /**
-     * Interact with the blog's slug.
-     */
-    protected function slug(): Attribute
-    {
-        return Attribute::make(
-            set: fn ($value) => \slugify($this, $value),
-        );
-    }
-
-    /**
-     * Interact with the blog createdBy.
+     * Interact with the lesson createdBy.
      */
     protected function createdBy(): Attribute
     {

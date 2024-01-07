@@ -255,13 +255,13 @@ final class VettingStatus
         $value = null;
         switch ($statusCode) {
             case 10:
-                $value = __(OrderStatus::SET_ACCEPTED);
+                $value = __(VettingStatus::SET_ACCEPTED);
                 break;
             case 20:
-                $value = __(OrderStatus::SET_PENDING);
+                $value = __(VettingStatus::SET_PENDING);
                 break;
             case 30:
-                $value = __(OrderStatus::SET_REJECTED);
+                $value = __(VettingStatus::SET_REJECTED);
                 break;
         }
 
@@ -277,14 +277,14 @@ final class VettingStatus
     {
         $value = null;
         switch ($statusCode) {
-            case OrderStatus::SET_ACCEPTED:
-                $value = OrderStatus::ACCEPTED;
+            case VettingStatus::SET_ACCEPTED:
+                $value = VettingStatus::ACCEPTED;
                 break;
-            case OrderStatus::SET_PENDING:
-                $value = OrderStatus::PENDING;
+            case VettingStatus::SET_PENDING:
+                $value = VettingStatus::PENDING;
                 break;
-            case OrderStatus::SET_REJECTED:
-                $value = OrderStatus::REJECTED;
+            case VettingStatus::SET_REJECTED:
+                $value = VettingStatus::REJECTED;
                 break;
         }
 
@@ -297,9 +297,9 @@ final class VettingStatus
     public static function getAll()
     {
         return [
-            self::ACCEPTED => OrderStatus::getValue(self::ACCEPTED),
-            self::PENDING => OrderStatus::getValue(self::PENDING),
-            self::REJECTED => OrderStatus::getValue(self::REJECTED),
+            self::ACCEPTED => VettingStatus::getValue(self::ACCEPTED),
+            self::PENDING => VettingStatus::getValue(self::PENDING),
+            self::REJECTED => VettingStatus::getValue(self::REJECTED),
         ];
     }
 }
@@ -515,6 +515,126 @@ final class JobTypeK
             self::SET_INTERNSHIP_GRADUATE => JobTypeK::getValue(self::SET_INTERNSHIP_GRADUATE),
             self::SET_PART_TIME => JobTypeK::getValue(self::SET_PART_TIME),
             self::SET_SENIOR_LEVEL => JobTypeK::getValue(self::SET_SENIOR_LEVEL),
+        ];
+    }
+}
+
+/**
+ * Class EntityType
+ */
+final class EntityType
+{
+    const USER_PROFILE_IMAGE = 10;
+    const COURSE_COVER_IMAGE = 20;
+    const LESSON_VIDEO = 30;
+    const EMPLOYER_COMPANY_LOGO = 40;
+    const APPLICANT_CV = 50;
+    const APPLICANT_COVER_LETTER = 60;
+
+    public static function getValue($x, $getSlug = false)
+    {
+        $value = null;
+        switch ($x) {
+            case 10:
+                $value = $getSlug ? generateSlug('user-profile-image') : __('User Profile Image');
+                break;
+            case 20:
+                $value = $getSlug ? generateSlug('course-cover-image') : __('Course Cover Image');
+                break;
+            case 30:
+                $value = $getSlug ? generateSlug('lesson-video') : __('Lesson Video');
+                break;
+            case 40:
+                $value = $getSlug ? generateSlug('employer-company-logo') : __('Employer Company Logo');
+                break;
+            case 50:
+                $value = $getSlug ? generateSlug('applicant-cv') : __('Applicant CV');
+                break;
+            case 60:
+                $value = $getSlug ? generateSlug('applicant-cover-letter') : __('Applicant Cover Letter');
+                break;
+        }
+
+        return $value;
+    }
+}
+
+/**
+ * Class Lessons Types
+ */
+final class LessonTypes
+{
+    const VIDEO = 10;
+    const ARTICLE = 20;
+
+    /**
+     * Returns respective value.
+     *
+     *
+     * @return null
+     */
+    public static function getValue($x)
+    {
+        $value = null;
+        switch ($x) {
+            case 10:
+                $value = __('Video');
+                break;
+            case 20:
+                $value = __('Article');
+        }
+
+        return $value;
+    }
+
+    /**
+     * Returns respective value.
+     *
+     *
+     * @return null
+     */
+    public static function getKeyValue($x)
+    {
+        $value = null;
+        switch ($x) {
+            case 10:
+                $value = __('VIDEO');
+                break;
+            case 20:
+                $value = __('ARTICLE');
+                break;
+        }
+
+        return $value;
+    }
+
+    /**
+     * @param $courseType
+     * @return array|null
+     */
+    public static function setValue($lessonType)
+    {
+        $value = null;
+        switch ($lessonType) {
+            case 'VIDEO':
+                $value = LessonTypes::VIDEO;
+                break;
+            case 'ARTICLE':
+                $value = LessonTypes::ARTICLE;
+                break;
+        }
+
+        return $value;
+    }
+
+    /**
+     * @return array
+     */
+    public static function getAllKeyValue()
+    {
+        return [
+            LessonTypes::getKeyValue(self::VIDEO),
+            LessonTypes::getKeyValue(self::ARTICLE),
         ];
     }
 }

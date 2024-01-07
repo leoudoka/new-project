@@ -16,6 +16,11 @@ class Contact extends BaseModel
     /**
      * The attributes that are mass assignable.
      */
-    protected $fillable = [];
+    protected $fillable = [
+        'name',
+        'email',
+        'message',
+        'mobile_number'
+    ];
 
 }

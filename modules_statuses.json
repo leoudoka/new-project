@@ -5,6 +5,5 @@
     "Course": true,
     "Admin": true,
     "Contact": true,
-    "Applicant": true,
     "Employer": true
 }

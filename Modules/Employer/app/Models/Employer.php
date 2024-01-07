@@ -2,6 +2,10 @@
 
 namespace Modules\Employer\app\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 use App\Models\BaseModel;
 use App\Models\User;
 use Modules\Job\app\Models\Jobs;
@@ -25,8 +29,11 @@ class Employer extends BaseModel
         'country_id',
         'state_id',
         'address_id',
-        'user_id',
-        'status'
+        'attachment_id',
+        'status',
+        'is_approved',
+        'created_by',
+        'approved_by',
     ];
 
     /**
@@ -41,21 +48,21 @@ class Employer extends BaseModel
     }
 
     /**
-     * Interact with the product's slug.
+     * Interact with the employer's slug.
      */
     protected function slug(): Attribute
     {
         return Attribute::make(
-            set: fn ($value) => $this->slugify($value),
+            set: fn ($value) => \slugify($this, $value),
         );
     }
 
     /**
-     * The jobs that belong to the employer.
+     * Get the jobs for the employer.
      */
-    public function jobs(): BelongsToMany
+    public function jobs(): HasMany
     {
-        return $this->belongsToMany(Job::class);
+        return $this->HasMany(Job::class);
     }
 
     /**
@@ -67,29 +74,30 @@ class Employer extends BaseModel
     }
 
     /**
-     * Slugify employer name.
+     * Interact with the employercreatedBy.
      */
-    public function slugify($text)
+    protected function createdBy(): Attribute
     {
-        $slug = strtolower($text);
-        $slug = str_replace(array('[\', \']'), '', $slug);
-        $slug = preg_replace('/\[.*\]/U', '', $slug);
-        $slug = preg_replace('/&(amp;)?#?[a-z0-9]+;/i', '-', $slug);
-        $slug = htmlentities($slug, ENT_COMPAT, 'utf-8');
-        $slug = preg_replace('/&([a-z])(acute|uml|circ|grave|ring|cedil|slash|tilde|caron|lig|quot|rsquo);/i', '\\1', $slug );
-        $slug = preg_replace(array('/[^a-z0-9]/i', '/[-]+/') , '-', $slug);
+        return Attribute::make(
+            get: fn ($value) => User::selectRaw(
+                                    'CONCAT(first_name, " ", last_name) as created_by'
+                                )
+                                ->where('id', $value)
+                                ->first()
+        );
+    }
 
-        # slug repeat check
-        $latest = $this->whereRaw("slug REGEXP '^{$slug}(-[0-9]+)?$'")
-                        ->latest('id')
-                        ->value('slug');
-
-        if($latest){
-            $pieces = explode('-', $latest);
-            $number = intval(end($pieces));
-            $slug .= '-' . ($number + 1);
-        }       
-
-        return $slug;
+    /**
+     * Interact with the employer's approvedBy.
+     */
+    protected function approvedBy(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => User::selectRaw(
+                                    'CONCAT(first_name, " ", last_name) as created_by'
+                                )
+                                ->where('id', $value)
+                                ->first()
+        );
     }
 }

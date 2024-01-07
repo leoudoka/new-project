@@ -4,6 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+use Modules\Course\app\Models\Courses;
+
 return new class extends Migration
 {
     /**
@@ -11,15 +13,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('blogs', function (Blueprint $table) {
+        Schema::create('course_sections', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('title');
-            $table->string('slug')->unique();
-            $table->longText('description');
-            $table->enum('status', [
-                \ActiveStatus::INACTIVE,
-                \ActiveStatus::ACTIVE
-            ])->default(\ActiveStatus::ACTIVE);
+            $table->string('title', 126);
+            $table->tinyInteger('section_number');
+            $table->foreignIdFor(Courses::class);
             $table->bigInteger('created_by')->nullable();
             $table->timestamps();
             $table->foreign('created_by')->references('id')->on('users')->onDelete('SET NULL');
@@ -31,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('blogs');
+        Schema::dropIfExists('course_sections');
     }
 };

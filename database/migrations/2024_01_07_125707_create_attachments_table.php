@@ -11,15 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('blogs', function (Blueprint $table) {
+        Schema::create('attachments', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('title');
-            $table->string('slug')->unique();
-            $table->longText('description');
-            $table->enum('status', [
-                \ActiveStatus::INACTIVE,
-                \ActiveStatus::ACTIVE
-            ])->default(\ActiveStatus::ACTIVE);
+            $table->string('name', 100);
+            $table->string('path', 255);
+            $table->bigInteger('entity_id');
+            $table->enum('entity_type', [
+                \EntityType::USER_PROFILE_IMAGE,
+                \EntityType::COURSE_COVER_IMAGE,
+                \EntityType::LESSON_VIDEO,
+                \EntityType::EMPLOYER_COMPANY_LOGO,
+                \EntityType::APPLICANT_CV,
+                \EntityType::APPLICANT_COVER_LETTER,
+            ]);
             $table->bigInteger('created_by')->nullable();
             $table->timestamps();
             $table->foreign('created_by')->references('id')->on('users')->onDelete('SET NULL');
@@ -31,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('blogs');
+        Schema::dropIfExists('attachments');
     }
 };

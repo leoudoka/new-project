@@ -1,45 +1,33 @@
 <?php
 
-namespace Modules\Blog\app\Models;
+namespace Modules\Course\app\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
 use App\Models\BaseModel;
 use App\Models\User;
 
-class Blog extends BaseModel
+class CourseCategories extends BaseModel
 {
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'blogs';
+    protected $table = 'course_categories';
 
     /**
      * The attributes that are mass assignable.
      */
     protected $fillable = [
-        'title',
+        'name',
         'slug',
         'description',
-        'status',
         'created_by'
     ];
-
+    
     /**
-     * Interact with the job category status.
-     */
-    protected function status(): Attribute
-    {
-        return Attribute::make(
-            get: fn ($value) => \ActiveStatus::getValue($value),
-            set: fn ($value) => \ActiveStatus::setValue($value),
-        );
-    }
-
-    /**
-     * Interact with the blog's slug.
+     * Interact with the course category slug.
      */
     protected function slug(): Attribute
     {
@@ -49,7 +37,7 @@ class Blog extends BaseModel
     }
 
     /**
-     * Interact with the blog createdBy.
+     * Interact with the course category createdBy.
      */
     protected function createdBy(): Attribute
     {
