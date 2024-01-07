@@ -7,8 +7,27 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
+use Modules\Admin\Repositories\AdminRepository;
+use Modules\Admin\Services\AdminService;
+
 class AdminController extends Controller
 {
+    /**
+     * The admin service
+     */
+    protected AdminService $adminService;
+
+    /**
+     * AdminController constructor.
+     *
+     * @param AdminRepository $adminRepository
+     */
+    public function __construct(
+        AdminRepository $adminRepository
+    ) {
+        $this->adminService = new AdminService($adminRepository);
+    }
+
     /**
      * Display a listing of the resource.
      */

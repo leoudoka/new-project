@@ -7,8 +7,27 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
+use Modules\Job\Repositories\JobRepository;
+use Modules\Job\Services\JobService;
+
 class JobController extends Controller
 {
+    /**
+     * The job service
+     */
+    protected JobService $jobService;
+
+    /**
+     * JobController constructor.
+     *
+     * @param JobRepository $jobRepository
+     */
+    public function __construct(
+        JobRepository $jobRepository
+    ) {
+        $this->jobService = new JobService($jobRepository);
+    }
+
     /**
      * Display a listing of the resource.
      */

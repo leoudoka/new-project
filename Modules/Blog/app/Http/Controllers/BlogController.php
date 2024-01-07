@@ -7,8 +7,27 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
+use Modules\Blog\Repositories\BlogRepository;
+use Modules\Blog\Services\BlogService;
+
 class BlogController extends Controller
 {
+    /**
+     * The blog service
+     */
+    protected BlogService $blogService;
+
+    /**
+     * BlogController constructor.
+     *
+     * @param BlogRepository $blogRepository
+     */
+    public function __construct(
+        BlogRepository $blogRepository
+    ) {
+        $this->blogService = new BlogService($blogRepository);
+    }
+
     /**
      * Display a listing of the resource.
      */

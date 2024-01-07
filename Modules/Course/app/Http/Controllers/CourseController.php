@@ -7,8 +7,27 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
+use Modules\Course\Repositories\CourseRepository;
+use Modules\Course\Services\CourseService;
+
 class CourseController extends Controller
 {
+    /**
+     * The course service
+     */
+    protected CourseService $courseService;
+
+    /**
+     * CourseController constructor.
+     *
+     * @param CourseRepository $courseRepository
+     */
+    public function __construct(
+        CourseRepository $courseRepository
+    ) {
+        $this->courseService = new CourseService($courseRepository);
+    }
+
     /**
      * Display a listing of the resource.
      */

@@ -7,8 +7,27 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
+use Modules\User\Repositories\UserRepository;
+use Modules\User\Services\UserService;
+
 class UserController extends Controller
 {
+    /**
+     * The user service
+     */
+    protected UserService $userService;
+
+    /**
+     * UserController constructor.
+     *
+     * @param UserRepository $userRepository
+     */
+    public function __construct(
+        UserRepository $userRepository
+    ) {
+        $this->userService = new UserService($userRepository);
+    }
+
     /**
      * Display a listing of the resource.
      */
