@@ -2,21 +2,19 @@
 
 namespace Modules\Blog\app\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\Blog\Database\factories\BlogFactory;
+use App\Models\BaseModel;
 
-class Blog extends Model
+class Blog extends BaseModel
 {
-    use HasFactory;
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'blogs';
 
     /**
      * The attributes that are mass assignable.
      */
     protected $fillable = [];
-    
-    protected static function newFactory(): BlogFactory
-    {
-        //return BlogFactory::new();
-    }
 }

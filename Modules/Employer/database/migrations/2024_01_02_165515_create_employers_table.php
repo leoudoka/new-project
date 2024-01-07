@@ -4,6 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+use App\Models\User;
+
 return new class extends Migration
 {
     /**
@@ -11,17 +13,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('job_type', function (Blueprint $table) {
+        Schema::create('employers', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->enum('type', [
-                \JobTypeK::CONTRACT,
-                \JobTypeK::FULL_GRADUATE,
-                \JobTypeK::INTERNSHIP_GRADUATE,
-                \JobTypeK::PART_TIME
-            ])->unique();
-            $table->string('description')->nullable();
+            $table->string('name', 50);
+            $table->string('slug', 70)->unique();
+            $table->text('about')->nullable();
+            $table->foreignId('country_id', 10)->nullable();
+            $table->foreignId('state_id', 10)->nullable();
+            $table->foreignIdFor(Address::class)->nullable();
+            $table->foreignIdFor(User::class);
             $table->enum('status', [0, 1])->default(1);
-            $table->foreign('created_by')->references('id')->on('users');
             $table->timestamps();
         });
     }
@@ -31,6 +32,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('job_type');
+        Schema::dropIfExists('employers');
     }
 };

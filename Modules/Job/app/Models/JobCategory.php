@@ -2,21 +2,19 @@
 
 namespace Modules\Job\app\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\Job\Database\factories\JobCategoryFactory;
+use App\Models\BaseModel;
 
-class JobCategory extends Model
+class JobCategory extends BaseModel
 {
-    use HasFactory;
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'job_categories';
 
     /**
      * The attributes that are mass assignable.
      */
     protected $fillable = [];
-    
-    protected static function newFactory(): JobCategoryFactory
-    {
-        //return JobCategoryFactory::new();
-    }
 }

@@ -4,6 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
+use App\Models\User;
+
 return new class extends Migration
 {
     /**
@@ -11,12 +13,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('contact', function (Blueprint $table) {
+        Schema::create('address', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('name');
-            $table->string('email');
-            $table->string('message');
-            $table->string('mobile_number')->nullable();
+            $table->string('address', 255)->nullable();
+            $table->foreignId('city_id', 10)->nullable();
+            $table->foreignId('country_id', 10)->nullable();
+            $table->string('postal_code', 20)->nullable();
+            $table->foreignIdFor(User::class);
             $table->timestamps();
         });
     }
@@ -26,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('contact');
+        Schema::dropIfExists('address');
     }
 };

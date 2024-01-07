@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('applicant', function (Blueprint $table) {
-            $table->id();
-            
+        Schema::create('blogs', function (Blueprint $table) {
+            $table->bigIncrements('id');
+            $table->string('title');
+            $table->string('slug')->unique();
+            $table->longText('description');
+            $table->enum('status', [0, 1])->default(1);
             $table->timestamps();
         });
     }
@@ -23,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('applicant');
+        Schema::dropIfExists('blogs');
     }
 };

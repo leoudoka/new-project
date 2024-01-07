@@ -2,21 +2,19 @@
 
 namespace Modules\Course\app\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\Course\Database\factories\CourseFactory;
+use App\Models\BaseModel;
 
-class Course extends Model
+class Course extends BaseModel
 {
-    use HasFactory;
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'courses';
 
     /**
      * The attributes that are mass assignable.
      */
     protected $fillable = [];
-    
-    protected static function newFactory(): CourseFactory
-    {
-        //return CourseFactory::new();
-    }
 }

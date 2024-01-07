@@ -9,7 +9,6 @@ use Modules\Job\app\Models\JobIndustry;
 use Modules\Job\app\Models\JobExperienceLevel;
 use Modules\Job\app\Models\JobType;
 use Modules\Employer\app\Models\Employer;
-use App\Models\User;
 
 return new class extends Migration
 {
@@ -18,13 +17,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('job', function (Blueprint $table) {
+        Schema::create('jobs', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('title');
             $table->foreignIdFor(JobCategory::class);
             $table->foreignIdFor(JobIndustry::class)->nullable();
             $table->foreignIdFor(JobExperienceLevel::class)->default(\JobExperienceLevelType::ANY_YEARS_OF_EXPERIENCE);
             $table->foreignIdFor(JobType::class)->nullable();
+            $table->foreignId('country_id', 10)->nullable();
             $table->foreignId('state_id', 10)->nullable();
             $table->string('experience_level')->nullable();
             $table->text('summary')->nullable();
@@ -43,6 +43,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('job');
+        Schema::dropIfExists('jobs');
     }
 };

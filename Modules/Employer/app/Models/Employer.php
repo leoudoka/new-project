@@ -2,21 +2,19 @@
 
 namespace Modules\Employer\app\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\Employer\Database\factories\EmployerFactory;
+use App\Models\BaseModel;
 
-class Employer extends Model
+class Employer extends BaseModel
 {
-    use HasFactory;
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'employers';
 
     /**
      * The attributes that are mass assignable.
      */
     protected $fillable = [];
-    
-    protected static function newFactory(): EmployerFactory
-    {
-        //return EmployerFactory::new();
-    }
 }

@@ -2,21 +2,20 @@
 
 namespace Modules\Contact\app\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Modules\Contact\Database\factories\ContactFactory;
+use App\Models\BaseModel;
 
-class Contact extends Model
+class Contact extends BaseModel
 {
-    use HasFactory;
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
+    protected $table = 'contact_us';
 
     /**
      * The attributes that are mass assignable.
      */
     protected $fillable = [];
-    
-    protected static function newFactory(): ContactFactory
-    {
-        //return ContactFactory::new();
-    }
+
 }

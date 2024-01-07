@@ -11,10 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('job_category', function (Blueprint $table) {
+        Schema::create('job_experience_levels', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('name', 100);
-            $table->string('slug', 120)->unique();
+            $table->enum('level', [
+                \JobExperienceLevelType::ANY_YEARS_OF_EXPERIENCE,
+                \JobExperienceLevelType::NO_EXPERIENCE,
+                \JobExperienceLevelType::INTERNSHIP_GRADUATE,
+                \JobExperienceLevelType::ENTRY_LEVEL,
+                \JobExperienceLevelType::MID_LEVEL,
+                \JobExperienceLevelType::SENIOR_LEVEL,
+            ])->unique();
             $table->string('description')->nullable();
             $table->enum('status', [0, 1])->default(1);
             $table->foreign('created_by')->references('id')->on('users');
@@ -27,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('job_category');
+        Schema::dropIfExists('job_experience_levels');
     }
 };
