@@ -13,3 +13,11 @@ class IUser(metaclass=ABCMeta):
 	@abstractmethod
 	def get_user_by_id_or_404(self, id: int):
 		raise NotImplementedError
+	
+	@abstractmethod
+	def update_user(self, args: dict):
+		raise NotImplementedError
+	
+	@abstractmethod
+	def delete_user(self, id: int):
+		raise NotImplementedError

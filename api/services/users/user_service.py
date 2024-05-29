@@ -1,9 +1,49 @@
 from flask import abort
 
 from api import db
-from api.models import User as UserModel
+from api.models import User
 from .i_user_service import IUser
 
-class User(IUser):
+class UserService(IUser):
     def get_user_by_id_or_404(self, id):
-        return db.session.get(UserModel, id) or abort(404)
+        return db.session.get(User, id) or abort(404)
+    
+    def get_users(self):
+        return User.select()
+    
+    def get_user_by_given_column_name(self, column_name, value):
+        if hasattr(User, column_name):
+            column_name = getattr(User, column_name)
+            return db.session.scalar(User.select().filter_by(column_name=value))
+        abort(404)
+    
+    def create_user(self, args: dict):
+        try:
+            user_data = User(**args)
+            db.session.add(user_data)
+            db.session.commit()
+            return user_data
+        except Exception as e:
+            self.sqlalchemy.session.rollback()
+            raise e
+        
+    def update_user(self, args: dict):
+        try:
+            if args.get('id'):
+                user_to_update = self.get_user_by_id_or_404(args.get('id'))
+                for key, value in args.items():
+                    if hasattr(user_to_update, key):
+                        setattr(user_to_update, key, value)
+                db.session.commit()
+                return user_to_update
+
+        except Exception as e:
+            db.session.rollback()
+            raise e
+
+    def delete_user(self, id: int)-> dict:
+        user_to_delete = self.get_user_by_id_or_404(id)
+
+        db.session.delete(user_to_delete)
+        db.session.commit()
+        return {}
