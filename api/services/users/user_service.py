@@ -31,11 +31,10 @@ class UserService(IUser):
         try:
             if args.get('id'):
                 user_to_update = self.get_user_by_id_or_404(args.get('id'))
-                for key, value in args.items():
-                    if hasattr(user_to_update, key):
-                        setattr(user_to_update, key, value)
-                db.session.commit()
-                return user_to_update
+                if user_to_update:
+                    user_to_update.update()
+                    db.session.commit()
+                    return user_to_update
 
         except Exception as e:
             db.session.rollback()
@@ -46,4 +45,4 @@ class UserService(IUser):
 
         db.session.delete(user_to_delete)
         db.session.commit()
-        return {}
+        return {}, 204
