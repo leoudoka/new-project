@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from hashlib import md5
-import secrets
+import secrets, enum
 from time import time
 from typing import Optional
 
@@ -78,17 +78,28 @@ class User(Updateable, Model):
     __tablename__ = 'users'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    username: so.Mapped[str] = so.mapped_column(
-        sa.String(64), index=True, unique=True)
+    first_name: so.Mapped[str] = so.mapped_column(sa.String(64), index=True)
+    middle_name: so.Mapped[str] = so.mapped_column(
+        sa.String(64), index=True, nullable=True)
+    last_name: so.Mapped[str] = so.mapped_column(sa.String(64), index=True)
     email: so.Mapped[str] = so.mapped_column(
         sa.String(120), index=True, unique=True)
+    gender: so.Mapped[Optional[enum.Enum]] = so.mapped_column(
+        'gender', sa.Enum('male', 'female', 'not-specified'), 
+        default='not-specified')
+    dob: so.Mapped[Optional[datetime.date]] = so.mapped_column(sa.Date, index=True, nullable=True)
+    mobile_number: so.Mapped[Optional[str]] = so.mapped_column(sa.String(15))
     password_harsh: so.Mapped[Optional[str]] = so.mapped_column(sa.String(256))
+    email_verified_at: so.Mapped[datetime] = so.mapped_column(nullable=True)
     last_seen: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
 
-    tokens: so.WriteOnlyMapped['Token'] = so.relationship(
-        back_populates='user')
+    tokens: so.WriteOnlyMapped['Token'] = so.relationship(back_populates='user')
+    address: so.WriteOnlyMapped['Address'] = so.relationship(back_populates='user')
+    attachments: so.WriteOnlyMapped['Attachment'] = so.relationship(back_populates='user')
+    jobs: so.WriteOnlyMapped['Job'] = so.relationship(back_populates='user')
+    applicant: so.WriteOnlyMapped['JobApplicant'] = so.relationship(back_populates='user')
 
     def __repr__(self):  # pragma: no cover
         return '<User {}>'.format(self.username)
@@ -164,3 +175,183 @@ class User(Updateable, Model):
             return
         return db.session.scalar(User.select().filter_by(
             email=data['reset_email']))
+    
+
+class Address(Updateable, Model):
+    __tablename__ = 'addresses'
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    address: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), index=True)
+    city_id: so.Mapped[int]
+    country_id: so.Mapped[int]
+    postal_code: so.Mapped[Optional[str]] = so.mapped_column(sa.String(8), index=True)
+    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
+    created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+    updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+
+    user: so.Mapped[User] = so.relationship(back_populates='address')
+
+    def __repr__(self):  # pragma: no cover
+        return '<Address {}>'.format(self.address)
+    
+class Attachment(Updateable, Model):
+    __tablename__ = 'attachments'
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    name: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True)
+    path: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), index=True)
+    entity_id: so.Mapped[int]
+    entity_type: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True)
+    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
+    created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+    updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+
+    user: so.Mapped[User] = so.relationship(back_populates='attachments')
+
+    def __repr__(self):  # pragma: no cover
+        return '<Attachment {}>'.format(self.path)
+    
+
+class JobContractType(Updateable, Model):
+    __tablename__ = 'job_contract_types'
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    contract_type: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True)
+    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, index=True)
+    status: so.Mapped[bool] = so.mapped_column(default=False)
+    created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
+    created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+    updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+
+
+    def __repr__(self):  # pragma: no cover
+        return '<Job Contract Type {}>'.format(self.contract_type)
+    
+class JobWorkType(Updateable, Model):
+    __tablename__ = 'job_work_types'
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    work_type: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True)
+    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, index=True)
+    status: so.Mapped[bool] = so.mapped_column(default=False)
+    created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
+    created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+    updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+
+
+    def __repr__(self):  # pragma: no cover
+        return '<Job Work Type {}>'.format(self.work_type)
+    
+class JobExperienceType(Updateable, Model):
+    __tablename__ = 'job_experience_types'
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    experience_type: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True)
+    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, index=True)
+    status: so.Mapped[bool] = so.mapped_column(default=False)
+    created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
+    created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+    updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+
+
+    def __repr__(self):  # pragma: no cover
+        return '<Job Experience Type {}>'.format(self.experience_type)
+    
+class JobCategory(Updateable, Model):
+    __tablename__ = 'job_categories'
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    name: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True)
+    slug: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True, unique=True)
+    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, index=True)
+    status: so.Mapped[bool] = so.mapped_column(default=False)
+    created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
+    created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+    updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+
+
+    def __repr__(self):  # pragma: no cover
+        return '<Job Category {}>'.format(self.name)
+    
+
+class JobIndustry(Updateable, Model):
+    __tablename__ = 'job_industries'
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    name: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True)
+    slug: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True, unique=True)
+    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, index=True)
+    status: so.Mapped[bool] = so.mapped_column(default=False)
+    created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
+    created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+    updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+
+
+    def __repr__(self):  # pragma: no cover
+        return '<Job Industries {}>'.format(self.name)
+    
+class Job(Updateable, Model):
+    __tablename__ = 'jobs'
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    title: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), index=True)
+    slug: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), index=True, unique=True)
+    summary: so.Mapped[Optional[str]] = so.mapped_column(sa.String(128), index=True)
+    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, index=True)
+    job_category_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(JobCategory.id))
+    job_industry_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(JobIndustry.id))
+    job_experience_type_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(JobExperienceType.id))
+    job_contract_type_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(JobContractType.id))
+    featured: so.Mapped[bool] = so.mapped_column(default=False)
+    status: so.Mapped[Optional[enum.Enum]] = so.mapped_column(
+        sa.Enum('open', 'paused', 'closed'), 
+        default='open')
+    employer_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('employer.id'), index=True)
+    created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
+    created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+    updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+
+    employer: so.Mapped['Employer'] = so.relationship(back_populates='jobs')
+    user: so.Mapped[User] = so.relationship(back_populates='jobs')
+
+class Employer(Updateable, Model):
+    __tablename__ = 'employers'
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    title: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), index=True)
+    slug: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), index=True, unique=True)
+    about: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, index=True)
+    country_id: so.Mapped[int]
+    state_id: so.Mapped[int]
+    address_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Address.id), index=True)
+    attachment_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Attachment.id), index=True)
+    is_approved: so.Mapped[bool] = so.mapped_column(default=False)
+    status: so.Mapped[bool] = so.mapped_column(default=False)
+    approved_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
+    created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
+    created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+    updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+
+    applicant: so.Mapped['JobApplicant'] = so.relationship(back_populates='employer')
+    user: so.Mapped['User'] = so.relationship(back_populates='employer')
+
+class JobApplicant(Updateable, Model):
+    __tablename__ = 'job_applicants'
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    job_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Job.id))
+    employer_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Employer.id))
+    cover_letter_attachment_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Attachment.id))
+    cv_attachment_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Attachment.id))
+    status: so.Mapped[Optional[enum.Enum]] = so.mapped_column(
+        sa.Enum('accepted', 'pending', 'rejected'), 
+        default='pending')
+    is_approved: so.Mapped[bool] = so.mapped_column(default=False)
+    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
+    vetted_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
+    approved_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
+    created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+    updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+
+    employer: so.Mapped['Employer'] = so.relationship(back_populates='applicant')
+    user: so.Mapped['User'] = so.relationship(back_populates='applicant')
