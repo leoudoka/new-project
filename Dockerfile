@@ -11,5 +11,5 @@ COPY migrations migrations
 COPY alembic.ini alembic.ini
 COPY main.py config.py boot.sh ./
 
-EXPOSE 5000
+EXPOSE 4000
 CMD ./boot.sh

@@ -41,8 +41,7 @@ class IConfig(metaclass=ABCMeta):
 
 
 class DevelopmentConfig(IConfig):
-    ALCHEMICAL_DATABASE_URL = os.environ.get('DATABASE_URL')
-    ALCHEMICAL_ENGINE_OPTIONS = {'echo': as_bool(os.environ.get('SQL_ECHO'))}
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 
     SECRET_KEY = os.environ.get('SECRET_KEY')
     DISABLE_AUTH = as_bool(os.environ.get('DISABLE_AUTH'))
@@ -52,8 +51,7 @@ class DevelopmentConfig(IConfig):
 
 
 class ProductionConfig(IConfig):
-    ALCHEMICAL_DATABASE_URL = os.environ.get('DATABASE_URL')
-    ALCHEMICAL_ENGINE_OPTIONS = {'echo': as_bool(os.environ.get('SQL_ECHO'))}
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 
     SECRET_KEY = os.environ.get('SECRET_KEY', 'top-secret!')
     DISABLE_AUTH = as_bool(os.environ.get('DISABLE_AUTH'))

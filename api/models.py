@@ -82,6 +82,8 @@ class User(Updateable, Model):
     middle_name: so.Mapped[str] = so.mapped_column(
         sa.String(64), index=True, nullable=True)
     last_name: so.Mapped[str] = so.mapped_column(sa.String(64), index=True)
+    username: so.Mapped[str] = so.mapped_column(sa.String(64), index=True,
+                                nullable=True, unique=True)
     email: so.Mapped[str] = so.mapped_column(
         sa.String(120), index=True, unique=True)
     gender: so.Mapped[Optional[enum.Enum]] = so.mapped_column(
@@ -98,11 +100,14 @@ class User(Updateable, Model):
     tokens: so.WriteOnlyMapped['Token'] = so.relationship(back_populates='user')
     address: so.WriteOnlyMapped['Address'] = so.relationship(back_populates='user')
     attachments: so.WriteOnlyMapped['Attachment'] = so.relationship(back_populates='user')
+    employer: so.Mapped['Employer'] = so.relationship(
+        foreign_keys='Employer.user_id', back_populates='user')
     jobs: so.WriteOnlyMapped['Job'] = so.relationship(back_populates='user')
-    applicant: so.WriteOnlyMapped['JobApplicant'] = so.relationship(back_populates='user')
+    applicantions: so.WriteOnlyMapped['JobApplicant'] = so.relationship(
+        foreign_keys='JobApplicant.user_id', back_populates='user')
 
     def __repr__(self):  # pragma: no cover
-        return '<User {}>'.format(self.username)
+        return '<User {}>'.format(f"{self.first_name} {self.last_name}")
 
     @property
     def url(self):
@@ -306,7 +311,7 @@ class Job(Updateable, Model):
     status: so.Mapped[Optional[enum.Enum]] = so.mapped_column(
         sa.Enum('open', 'paused', 'closed'), 
         default='open')
-    employer_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('employer.id'), index=True)
+    employer_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('employers.id'), index=True)
     created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
@@ -327,13 +332,17 @@ class Employer(Updateable, Model):
     attachment_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Attachment.id), index=True)
     is_approved: so.Mapped[bool] = so.mapped_column(default=False)
     status: so.Mapped[bool] = so.mapped_column(default=False)
+    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
     approved_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
-    created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
 
-    applicant: so.Mapped['JobApplicant'] = so.relationship(back_populates='employer')
-    user: so.Mapped['User'] = so.relationship(back_populates='employer')
+    # jobs: so.Mapped['Job'] = so.relationship(back_populates='employer')
+    jobs: so.WriteOnlyMapped['Job'] = so.relationship(back_populates='employer')
+    applicants: so.Mapped['JobApplicant'] = so.relationship(
+        foreign_keys='JobApplicant.employer_id', back_populates='employer')
+    user: so.Mapped['User'] = so.relationship(
+        foreign_keys='Employer.user_id', back_populates='employer')
 
 class JobApplicant(Updateable, Model):
     __tablename__ = 'job_applicants'
@@ -353,5 +362,9 @@ class JobApplicant(Updateable, Model):
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
 
-    employer: so.Mapped['Employer'] = so.relationship(back_populates='applicant')
-    user: so.Mapped['User'] = so.relationship(back_populates='applicant')
+    employer: so.Mapped['Employer'] = so.relationship(
+        foreign_keys='JobApplicant.employer_id', back_populates='applicants')
+    # employer: so.WriteOnlyMapped['Employer'] = so.relationship(
+    #     foreign_keys='JobApplicant.user_id', back_populates='applicants')
+    user: so.Mapped['User'] = so.relationship(
+        foreign_keys='JobApplicant.user_id', back_populates='applicantions')

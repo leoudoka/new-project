@@ -1,14 +1,5 @@
+import os
 from api import create_app
 
-app = create_app()
-
-@app.cli.group()
-def db():
-    """Database commands."""
-    pass
-
-@db.command()
-def upgrade():
-    """Create or upgrade the database."""
-    from alembic.config import main
-    main(argv=['upgrade', 'head'])
+config_class = os.environ.get('CONFIGURATION_SETUP')
+app = create_app(config_class)

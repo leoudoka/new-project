@@ -1,5 +1,5 @@
 """
-Welcome to the documentation for the Microblog API!
+Welcome to the documentation for the Smart Hub API!
 
 This project is written in Python, with the
 [Flask](https://flask.palletsprojects.com/) web framework. This documentation
@@ -9,18 +9,14 @@ the [APIFairy](https://github.com/miguelgrinberg/apifairy) Flask extension.
 
 ## Introduction
 
-Microblog-API is an easy to use web API for creating microblogs. It is an ideal
-project to use when learning a front end framework, as it provides a fully
-implemented back end that you can integrate against.
+Smart Hub API is an easy to use web API for managing a job portal.
 
-Microblog API provides all the base features required to implement a
+Smart Hub API provides all the base features required to implement a
 microblogging project:
 
 - User registration, login and logout
 - Password recovery flow with reset emails
-- Post creation and deletion
-- Follow and unfollow users
-- Feed with posts from followed users
+- Job creation and deletion
 - Pagination
 - Option to disable authentication during development
 
@@ -132,7 +128,6 @@ to a date and time specification in ISO 8601 format, such as
 `2020-01-01T00:00:00Z`. For users, the `after` argument must be set to a
 string. Examples:
 
-    http://localhost:5000/api/posts?limit=10&after=2021-01-01T00:00:00
     http://localhost:5000/api/users/me/followers?limit=10&after=diana
 
 The response body in a paginated request contains a `data` attribute that is
