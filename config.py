@@ -42,7 +42,7 @@ class IConfig(metaclass=ABCMeta):
 
 class DevelopmentConfig(IConfig):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-
+    SQLALCHEMY_ECHO = True
     SECRET_KEY = os.environ.get('SECRET_KEY')
     DISABLE_AUTH = as_bool(os.environ.get('DISABLE_AUTH'))
     OAUTH2_PROVIDERS = {}

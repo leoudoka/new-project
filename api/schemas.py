@@ -74,6 +74,8 @@ class UserSchema(ma.SQLAlchemySchema):
                                                    validate.Email()])
     password = ma.String(required=True, load_only=True,
                          validate=validate.Length(min=3))
+    dob = ma.String(required=True)
+    mobile_number = ma.String(required=True)
     has_password = ma.Boolean(dump_only=True)
     last_seen = ma.auto_field(dump_only=True)
     created_at = ma.auto_field(dump_only=True)

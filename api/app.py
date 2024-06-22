@@ -22,12 +22,12 @@ def create_app(config_class):
     # extensions
     from api import models
     db.init_app(app)
-    migrate.init_app(app, db)
     ma.init_app(app)
     if app.config['USE_CORS']:  # pragma: no branch
         cors.init_app(app)
     mail.init_app(app)
     apifairy.init_app(app)
+    migrate.init_app(app, db)
 
     # blueprints
     from api.errors import errors

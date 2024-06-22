@@ -1,14 +1,13 @@
 from datetime import datetime, timedelta
-from hashlib import md5
 import secrets, enum
-from time import time
-from typing import Optional
 
-from flask import current_app, url_for
 import jwt
-from alchemical import Model
-import sqlalchemy as sa
+from flask import current_app, url_for
+from flask_login import UserMixin
 from sqlalchemy import orm as so
+import sqlalchemy as sa
+from typing import Optional
+from time import time
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from api.app import db
@@ -20,7 +19,7 @@ class Updateable:
             setattr(self, attr, value)
 
 
-class Token(Model):
+class Token(db.Model):
     __tablename__ = 'tokens'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
@@ -74,7 +73,7 @@ class Token(Model):
             pass
 
 
-class User(Updateable, Model):
+class User(UserMixin, Updateable, db.Model):
     __tablename__ = 'users'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
@@ -89,6 +88,9 @@ class User(Updateable, Model):
     gender: so.Mapped[Optional[enum.Enum]] = so.mapped_column(
         'gender', sa.Enum('male', 'female', 'not-specified'), 
         default='not-specified')
+    role: so.Mapped[enum.Enum] = so.mapped_column(
+        'role', sa.Enum('admin', 'sub-admin', 'recruiter', 'talent', 'student'), 
+        default='not-specified')
     dob: so.Mapped[Optional[datetime.date]] = so.mapped_column(sa.Date, index=True, nullable=True)
     mobile_number: so.Mapped[Optional[str]] = so.mapped_column(sa.String(15))
     password_harsh: so.Mapped[Optional[str]] = so.mapped_column(sa.String(256))
@@ -102,9 +104,16 @@ class User(Updateable, Model):
     attachments: so.WriteOnlyMapped['Attachment'] = so.relationship(back_populates='user')
     employer: so.Mapped['Employer'] = so.relationship(
         foreign_keys='Employer.user_id', back_populates='user')
+    portfolio: so.WriteOnlyMapped['Portfolio'] = so.relationship(
+        foreign_keys='Portfolio.user_id', back_populates='user')
     jobs: so.WriteOnlyMapped['Job'] = so.relationship(back_populates='user')
     applicantions: so.WriteOnlyMapped['JobApplicant'] = so.relationship(
         foreign_keys='JobApplicant.user_id', back_populates='user')
+    job_approvals: so.WriteOnlyMapped['JobApplicant'] = so.relationship(
+        foreign_keys='JobApplicant.approved_by', back_populates='approved_by_user')
+    job_vet: so.WriteOnlyMapped['JobApplicant'] = so.relationship(
+        foreign_keys='JobApplicant.vetted_by', back_populates='vetted_by_user')
+    
 
     def __repr__(self):  # pragma: no cover
         return '<User {}>'.format(f"{self.first_name} {self.last_name}")
@@ -182,13 +191,13 @@ class User(Updateable, Model):
             email=data['reset_email']))
     
 
-class Address(Updateable, Model):
+class Address(Updateable, db.Model):
     __tablename__ = 'addresses'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     address: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), index=True)
-    city_id: so.Mapped[int]
-    country_id: so.Mapped[int]
+    state_id: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True)
+    country_id: so.Mapped[int] = so.mapped_column(sa.Integer, nullable=False)   
     postal_code: so.Mapped[Optional[str]] = so.mapped_column(sa.String(8), index=True)
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
@@ -198,8 +207,39 @@ class Address(Updateable, Model):
 
     def __repr__(self):  # pragma: no cover
         return '<Address {}>'.format(self.address)
+
+
+class Portfolio(Updateable, db.Model):
+    __tablename__ = 'portfolios'
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    about: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, nullable=True)
+    hourly_rate: so.Mapped[Optional[str]] = so.mapped_column(sa.String(30), nullable=True)
+    work_preference: so.Mapped[Optional[list]] = so.mapped_column(sa.PickleType, nullable=True)
+    job_industries: so.Mapped[Optional[list]] = so.mapped_column(sa.PickleType, nullable=True)
+    skills: so.Mapped[Optional[list]] = so.mapped_column(sa.PickleType, nullable=True)
+    portfolio_link: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
+    linkedin_link: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
+    job_category_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('job_categories.id'), index=True)
+    job_career_level_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('job_career_levels.id'))
+    resume_attachment_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('attachments.id'))
+    photo_attachment_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('attachments.id'))
+    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
+    created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+    updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+
+    user: so.Mapped[User] = so.relationship(back_populates='portfolio')
+    job_category: so.Mapped['JobCategory'] = so.relationship(back_populates='portfolios')
+
+    def __repr__(self):  # pragma: no cover
+        return '<Address {}>'.format(self.about)
     
-class Attachment(Updateable, Model):
+    @property
+    def category(self):
+        return self.job_category.name
+
+    
+class Attachment(Updateable, db.Model):
     __tablename__ = 'attachments'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
@@ -207,7 +247,7 @@ class Attachment(Updateable, Model):
     path: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), index=True)
     entity_id: so.Mapped[int]
     entity_type: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True)
-    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
+    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id),  index=True)
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
 
@@ -217,97 +257,259 @@ class Attachment(Updateable, Model):
         return '<Attachment {}>'.format(self.path)
     
 
-class JobContractType(Updateable, Model):
+class JobContractType(Updateable, db.Model):
     __tablename__ = 'job_contract_types'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    contract_type: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True)
-    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, index=True)
+    # TODO: create seeder @ full-time, contract, permanent, internship or temporary
+    type: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True, unique=True)
+    slug: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True, unique=True)
+    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text)
     status: so.Mapped[bool] = so.mapped_column(default=False)
-    created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
+    created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
 
 
     def __repr__(self):  # pragma: no cover
-        return '<Job Contract Type {}>'.format(self.contract_type)
+        return '<Job Contract Type {}>'.format(self.type)
     
-class JobWorkType(Updateable, Model):
-    __tablename__ = 'job_work_types'
+class JobCareerLevel(Updateable, db.Model):
+    __tablename__ = 'job_career_levels'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    work_type: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True)
-    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, index=True)
-    status: so.Mapped[bool] = so.mapped_column(default=False)
-    created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
+    '''
+    TODO: create seeder @
+    Entry-level
+    Intermediate
+    Mid-level
+    Senior or executive-level
+    '''
+    level: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True, unique=True)
+    slug: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True, unique=True)
+    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text)
+    status: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=True)
+    created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
 
 
     def __repr__(self):  # pragma: no cover
-        return '<Job Work Type {}>'.format(self.work_type)
+        return '<Job Work Type {}>'.format(self.level)
     
-class JobExperienceType(Updateable, Model):
-    __tablename__ = 'job_experience_types'
+class JobExperience(Updateable, db.Model):
+    __tablename__ = 'job_experiences'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    experience_type: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True)
-    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, index=True)
-    status: so.Mapped[bool] = so.mapped_column(default=False)
+    '''
+    TODO: create seeder @
+    0-3 Years
+    3-6 Years
+    6-10 Years
+    10-15 Years
+    Over 15 Years
+    '''
+    experience: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True, unique=True)
+    slug: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True, unique=True)
+    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, nullable=True)
+    status: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=True)
     created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
 
 
     def __repr__(self):  # pragma: no cover
-        return '<Job Experience Type {}>'.format(self.experience_type)
+        return '<Job Experience Type {}>'.format(self.experience)
     
-class JobCategory(Updateable, Model):
+class JobCategory(Updateable, db.Model):
     __tablename__ = 'job_categories'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    
+    '''
+    TODO: create seeder @ 
+        Advertising and marketing:
+            Creative director
+            Copywriter
+            Graphic designer
+            Marketing coordinator
+            Social media coordinator,
+        Aerospace:
+            Aeronautical engineer
+            Aircraft designer
+            Aircraft mechanic
+            Aviation manager
+            Pilot,
+        Agriculture:
+            Agronomist
+            Farmer
+            Food inspector
+            Landscape designer
+            Wildlife biologist,
+        Computer and technology:
+            Application developer
+            Computer programmer
+            Information security analyst
+            Software engineer
+            Web developer,
+        Construction:
+            Brickmason
+            Concrete laborer
+            Construction worker
+            Electrician
+            Equipment operator,
+        Education:
+            Academic advisor
+            Daycare teacher
+            Professor
+            Special education teacher
+            Teacher,
+        Energy:
+            Energy engineer
+            Environmental technician
+            Solar consultant
+            Urban planner
+            Wind turbine technician,
+        Entertainment:
+            Actor
+            Booking agent
+            Film crew
+            Photographer
+            Theatre manager,
+        Fashion:
+            Buyer
+            Fashion designer
+            Merchandiser
+            Stylist
+            Textile designer,
+        Finance and economic:
+            Certified public accountant (CPA)
+            Financial analyst
+            Financial planner
+            Investment banker
+            Private equity associate,
+        Food and beverage:
+            Bartender
+            Executive chef
+            Line cook
+            Restaurant manager
+            Sommelier,
+        Health care:
+            Biomedical engineer
+            Dentist
+            Physician
+            Physician assistant
+            Registered nurse,
+        Hospitality:
+            Event specialist
+            Front desk agent
+            Hotel manager
+            Spa manager
+            Travel agent,
+        Manufacturing:
+            Assembler
+            Manufacturing technician
+            Packaging engineer
+            Welder
+            Woodworker,
+        Media and news:
+            Broadcaster
+            Journalist
+            Producer
+            Social media specialist
+            Video editor,
+        Mining:
+            Coal miner
+            Geologist
+            Mining engineer
+            Petroleum engineer
+            Roustabout,
+        Pharmaceutical:
+            Chemist
+            Nuclear pharmacist
+            Pharmaceutical manufacturer
+            Pharmacist
+            Pharmacologist,
+        Telecommunication:
+            Cable installer
+            Data analyst
+            Systems manager
+            Telecommunications engineer
+            Telecommunications operator,
+        Transportation:
+            Distribution manager
+            Supply chain specialist
+            Traffic controller
+            Transportation engineer
+            Truck driver
+    ''' 
     name: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True)
     slug: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True, unique=True)
-    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, index=True)
-    status: so.Mapped[bool] = so.mapped_column(default=False)
+    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, nullable=True)
+    job_industry_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('job_industries.id'), index=True)
+    status: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=True)
     created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
 
-
+    industry: so.Mapped['JobIndustry'] = so.relationship(back_populates='categories')
+    portfolios: so.WriteOnlyMapped['Portfolio'] = so.relationship(back_populates='job_category')
     def __repr__(self):  # pragma: no cover
         return '<Job Category {}>'.format(self.name)
     
 
-class JobIndustry(Updateable, Model):
+class JobIndustry(Updateable, db.Model):
     __tablename__ = 'job_industries'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    '''
+    TODO: create seeder @ 
+        Advertising and marketing,
+        Aerospace,
+        Agriculture,
+        Computer and technology,
+        Construction,
+        Education,
+        Energy,
+        Entertainment,
+        Fashion,
+        Finance and economic,
+        Food and beverage,
+        Health care,
+        Hospitality,
+        Manufacturing,
+        Media and news,
+        Mining,
+        Pharmaceutical,
+        Telecommunication,
+        Transportation
+    ''' 
     name: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True)
     slug: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True, unique=True)
-    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, index=True)
+    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text)
     status: so.Mapped[bool] = so.mapped_column(default=False)
     created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
 
+    categories: so.WriteOnlyMapped['JobCategory'] = so.relationship(back_populates='industry')
 
     def __repr__(self):  # pragma: no cover
         return '<Job Industries {}>'.format(self.name)
     
-class Job(Updateable, Model):
+class Job(Updateable, db.Model):
     __tablename__ = 'jobs'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     title: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), index=True)
     slug: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), index=True, unique=True)
     summary: so.Mapped[Optional[str]] = so.mapped_column(sa.String(128), index=True)
-    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, index=True)
+    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text)
     job_category_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(JobCategory.id))
     job_industry_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(JobIndustry.id))
-    job_experience_type_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(JobExperienceType.id))
+    job_experience_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(JobExperience.id))
     job_contract_type_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(JobContractType.id))
-    featured: so.Mapped[bool] = so.mapped_column(default=False)
+    featured: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=False)
     status: so.Mapped[Optional[enum.Enum]] = so.mapped_column(
         sa.Enum('open', 'paused', 'closed'), 
         default='open')
@@ -319,19 +521,19 @@ class Job(Updateable, Model):
     employer: so.Mapped['Employer'] = so.relationship(back_populates='jobs')
     user: so.Mapped[User] = so.relationship(back_populates='jobs')
 
-class Employer(Updateable, Model):
+class Employer(Updateable, db.Model):
     __tablename__ = 'employers'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     title: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), index=True)
     slug: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), index=True, unique=True)
-    about: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, index=True)
-    country_id: so.Mapped[int]
-    state_id: so.Mapped[int]
+    about: so.Mapped[Optional[str]] = so.mapped_column(sa.Text)
+    state_id: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True)
+    country_id: so.Mapped[int] = so.mapped_column(sa.Integer, nullable=False)
     address_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Address.id), index=True)
     attachment_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Attachment.id), index=True)
-    is_approved: so.Mapped[bool] = so.mapped_column(default=False)
-    status: so.Mapped[bool] = so.mapped_column(default=False)
+    is_approved: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=False)
+    status: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=False)
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
     approved_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
@@ -344,21 +546,21 @@ class Employer(Updateable, Model):
     user: so.Mapped['User'] = so.relationship(
         foreign_keys='Employer.user_id', back_populates='employer')
 
-class JobApplicant(Updateable, Model):
+class JobApplicant(Updateable, db.Model):
     __tablename__ = 'job_applicants'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    job_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Job.id))
-    employer_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Employer.id))
-    cover_letter_attachment_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Attachment.id))
-    cv_attachment_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Attachment.id))
+    job_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Job.id), index=True)
+    employer_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Employer.id),  index=True)
+    cover_letter_attachment_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Attachment.id),  index=True)
+    cv_attachment_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Attachment.id),  index=True)
     status: so.Mapped[Optional[enum.Enum]] = so.mapped_column(
         sa.Enum('accepted', 'pending', 'rejected'), 
         default='pending')
-    is_approved: so.Mapped[bool] = so.mapped_column(default=False)
-    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
-    vetted_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
-    approved_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
+    is_approved: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=False)
+    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
+    vetted_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
+    approved_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
 
@@ -368,3 +570,7 @@ class JobApplicant(Updateable, Model):
     #     foreign_keys='JobApplicant.user_id', back_populates='applicants')
     user: so.Mapped['User'] = so.relationship(
         foreign_keys='JobApplicant.user_id', back_populates='applicantions')
+    approved_by_user: so.Mapped['User'] = so.relationship(
+        foreign_keys='JobApplicant.approved_by', back_populates='job_approvals')
+    vetted_by_user: so.Mapped['User'] = so.relationship(
+        foreign_keys='JobApplicant.vetted_by', back_populates='job_vet')
