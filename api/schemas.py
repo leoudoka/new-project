@@ -4,7 +4,8 @@ from flask_marshmallow import validate as flask_ma_validate
 
 from api import ma, db
 from api.services.auth.routes import token_auth
-from api.models import User, Portfolio
+from api.models import User, Portfolio, Job, JobCategory, JobIndustry, \
+    JobExperience, JobCareerLevel, JobContractType, JobApplicant
 
 paginated_schema_cache = {}
 
@@ -176,3 +177,95 @@ class PortfolioSchema(ma.Schema):
 # class UpdatePortfolioSchema(PortfolioSchema):
 
 #     user_id = ma.Integer(required=True)
+
+class JobSchema(ma.Schema):
+    class Meta:
+        model = Job
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    title = ma.String(required=False)
+    slug = ma.String(dump_only=True)
+    summary = ma.String(required=True)
+    description = ma.String(required=True)
+    featured = ma.Boolean(dump_only=True)
+    status = ma.String(dump_only=True)
+    user_id = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)
+
+
+class JobIndustriesSchema(ma.Schema):
+    class Meta:
+        model = JobIndustry
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    name = ma.String(required=False)
+    slug = ma.String(dump_only=True)
+    description = ma.String(required=False)
+    status = ma.Boolean(dump_only=True)
+    created_by = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)
+
+
+class JobCategorySchema(ma.Schema):
+    class Meta:
+        model = JobCategory
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    name = ma.String(required=False)
+    slug = ma.String(dump_only=True)
+    description = ma.String(required=False)
+    status = ma.Boolean(dump_only=True)
+    job_industry_id = ma.Integer(dump_only=True)
+    created_by = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)
+
+
+class JobExperienceSchema(ma.Schema):
+    class Meta:
+        model = JobExperience
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    experience = ma.String(required=True)
+    slug = ma.String(dump_only=True)
+    description = ma.String(required=False)
+    status = ma.Boolean(dump_only=True)
+    created_by = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)
+
+
+class JobCareerLevelSchema(ma.Schema):
+    class Meta:
+        model = JobCareerLevel
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    level = ma.String(required=True)
+    slug = ma.String(dump_only=True)
+    description = ma.String(required=False)
+    status = ma.Boolean(dump_only=True)
+    created_by = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)
+
+
+class JobContractTypeSchema(ma.Schema):
+    class Meta:
+        model = JobContractType
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    type = ma.String(required=True)
+    slug = ma.String(dump_only=True)
+    description = ma.String(required=False)
+    status = ma.Boolean(dump_only=True)
+    created_by = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)

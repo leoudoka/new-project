@@ -3,7 +3,6 @@ from apifairy.decorators import other_responses
 from flask import Blueprint, abort
 from apifairy import authenticate, body, response
 
-from api import db
 from api.services.users.user_service import UserService
 from api.schemas import UserSchema, UpdateUserSchema, EmptySchema
 from api.services.auth.auth_service import token_auth

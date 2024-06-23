@@ -15,6 +15,7 @@ cloudinary.config(
     api_key=os.getenv('CLOUDINARY_API_KEY'),
     api_secret=os.getenv('CLOUDINARY_API_SECRET')
 )
+
 class PortfolioService(IPortfolio):
     def get_portfolio_by_id_or_404(self, id):
         return db.session.get(Portfolio, id) or abort(404)

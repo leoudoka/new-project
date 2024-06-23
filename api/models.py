@@ -459,6 +459,23 @@ class Job(Updateable, db.Model):
     employer: so.Mapped['Employer'] = so.relationship(back_populates='jobs')
     user: so.Mapped[User] = so.relationship(back_populates='jobs')
 
+    @staticmethod
+    def generate_slug(slug):
+        _slug = slugify(slug)
+        unique_slug = _slug
+        counter = 1
+        
+        while Job.exists_slug(unique_slug):
+            unique_slug = f"{_slug}-{counter}"
+            counter += 1
+
+        return unique_slug
+	
+    @classmethod
+    def exists_slug(cls, slug):
+        existing_slug = cls.query.filter_by(slug=slug).first()
+        return existing_slug
+
 class Employer(Updateable, db.Model):
     __tablename__ = 'employers'
 
@@ -483,6 +500,23 @@ class Employer(Updateable, db.Model):
         foreign_keys='JobApplicant.employer_id', back_populates='employer')
     user: so.Mapped['User'] = so.relationship(
         foreign_keys='Employer.user_id', back_populates='employer')
+    
+    @staticmethod
+    def generate_slug(slug):
+        _slug = slugify(slug)
+        unique_slug = _slug
+        counter = 1
+        
+        while Employer.exists_slug(unique_slug):
+            unique_slug = f"{_slug}-{counter}"
+            counter += 1
+
+        return unique_slug
+	
+    @classmethod
+    def exists_slug(cls, slug):
+        existing_slug = cls.query.filter_by(slug=slug).first()
+        return existing_slug
 
 class JobApplicant(Updateable, db.Model):
     __tablename__ = 'job_applicants'

@@ -41,6 +41,8 @@ def create_app(config_class):
     app.register_blueprint(users, url_prefix='/v1/users')
     from api.services.portfolio.routes import portfolio
     app.register_blueprint(portfolio, url_prefix='/v1/portfolio')
+    from api.services.jobs.routes import jobs
+    app.register_blueprint(jobs, url_prefix='/v1/jobs')
 
     @app.route('/')
     def index():  # pragma: no cover
