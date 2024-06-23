@@ -9,6 +9,7 @@ import sqlalchemy as sa
 from typing import Optional
 from time import time
 from werkzeug.security import generate_password_hash, check_password_hash
+from slugify import slugify
 
 from api.app import db
 
@@ -225,6 +226,7 @@ class Portfolio(Updateable, db.Model):
     linkedin_link: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
     job_category_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('job_categories.id'), index=True)
     job_career_level_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('job_career_levels.id'))
+    job_experience_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('job_experiences.id'))
     resume_attachment_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('attachments.id'))
     photo_attachment_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('attachments.id'))
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
@@ -273,6 +275,23 @@ class JobContractType(Updateable, db.Model):
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
 
+    @staticmethod
+    def generate_slug(slug):
+        _slug = slugify(slug)
+        unique_slug = _slug
+        counter = 1
+        
+        while JobContractType.exists_slug(unique_slug):
+            unique_slug = f"{_slug}-{counter}"
+            counter += 1
+
+        return unique_slug
+	
+    @classmethod
+    def exists_slug(cls, slug):
+        existing_slug = cls.query.filter_by(slug=slug).first()
+        return existing_slug
+
 
     def __repr__(self):  # pragma: no cover
         return '<Job Contract Type {}>'.format(self.type)
@@ -281,13 +300,6 @@ class JobCareerLevel(Updateable, db.Model):
     __tablename__ = 'job_career_levels'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    '''
-    TODO: create seeder @
-    Entry-level
-    Intermediate
-    Mid-level
-    Senior or executive-level
-    '''
     level: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True, unique=True)
     slug: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True, unique=True)
     description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text)
@@ -295,6 +307,23 @@ class JobCareerLevel(Updateable, db.Model):
     created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+
+    @staticmethod
+    def generate_slug(slug):
+        _slug = slugify(slug)
+        unique_slug = _slug
+        counter = 1
+        
+        while JobCareerLevel.exists_slug(unique_slug):
+            unique_slug = f"{_slug}-{counter}"
+            counter += 1
+
+        return unique_slug
+	
+    @classmethod
+    def exists_slug(cls, slug):
+        existing_slug = cls.query.filter_by(slug=slug).first()
+        return existing_slug
 
 
     def __repr__(self):  # pragma: no cover
@@ -304,14 +333,6 @@ class JobExperience(Updateable, db.Model):
     __tablename__ = 'job_experiences'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    '''
-    TODO: create seeder @
-    0-3 Years
-    3-6 Years
-    6-10 Years
-    10-15 Years
-    Over 15 Years
-    '''
     experience: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True, unique=True)
     slug: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True, unique=True)
     description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, nullable=True)
@@ -319,6 +340,23 @@ class JobExperience(Updateable, db.Model):
     created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+
+    @staticmethod
+    def generate_slug(slug):
+        _slug = slugify(slug)
+        unique_slug = _slug
+        counter = 1
+        
+        while JobExperience.exists_slug(unique_slug):
+            unique_slug = f"{_slug}-{counter}"
+            counter += 1
+
+        return unique_slug
+	
+    @classmethod
+    def exists_slug(cls, slug):
+        existing_slug = cls.query.filter_by(slug=slug).first()
+        return existing_slug
 
 
     def __repr__(self):  # pragma: no cover
@@ -328,124 +366,6 @@ class JobCategory(Updateable, db.Model):
     __tablename__ = 'job_categories'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    
-    '''
-    TODO: create seeder @ 
-        Advertising and marketing:
-            Creative director
-            Copywriter
-            Graphic designer
-            Marketing coordinator
-            Social media coordinator,
-        Aerospace:
-            Aeronautical engineer
-            Aircraft designer
-            Aircraft mechanic
-            Aviation manager
-            Pilot,
-        Agriculture:
-            Agronomist
-            Farmer
-            Food inspector
-            Landscape designer
-            Wildlife biologist,
-        Computer and technology:
-            Application developer
-            Computer programmer
-            Information security analyst
-            Software engineer
-            Web developer,
-        Construction:
-            Brickmason
-            Concrete laborer
-            Construction worker
-            Electrician
-            Equipment operator,
-        Education:
-            Academic advisor
-            Daycare teacher
-            Professor
-            Special education teacher
-            Teacher,
-        Energy:
-            Energy engineer
-            Environmental technician
-            Solar consultant
-            Urban planner
-            Wind turbine technician,
-        Entertainment:
-            Actor
-            Booking agent
-            Film crew
-            Photographer
-            Theatre manager,
-        Fashion:
-            Buyer
-            Fashion designer
-            Merchandiser
-            Stylist
-            Textile designer,
-        Finance and economic:
-            Certified public accountant (CPA)
-            Financial analyst
-            Financial planner
-            Investment banker
-            Private equity associate,
-        Food and beverage:
-            Bartender
-            Executive chef
-            Line cook
-            Restaurant manager
-            Sommelier,
-        Health care:
-            Biomedical engineer
-            Dentist
-            Physician
-            Physician assistant
-            Registered nurse,
-        Hospitality:
-            Event specialist
-            Front desk agent
-            Hotel manager
-            Spa manager
-            Travel agent,
-        Manufacturing:
-            Assembler
-            Manufacturing technician
-            Packaging engineer
-            Welder
-            Woodworker,
-        Media and news:
-            Broadcaster
-            Journalist
-            Producer
-            Social media specialist
-            Video editor,
-        Mining:
-            Coal miner
-            Geologist
-            Mining engineer
-            Petroleum engineer
-            Roustabout,
-        Pharmaceutical:
-            Chemist
-            Nuclear pharmacist
-            Pharmaceutical manufacturer
-            Pharmacist
-            Pharmacologist,
-        Telecommunication:
-            Cable installer
-            Data analyst
-            Systems manager
-            Telecommunications engineer
-            Telecommunications operator,
-        Transportation:
-            Distribution manager
-            Supply chain specialist
-            Traffic controller
-            Transportation engineer
-            Truck driver
-    ''' 
     name: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True)
     slug: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True, unique=True)
     description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, nullable=True)
@@ -457,6 +377,25 @@ class JobCategory(Updateable, db.Model):
 
     industry: so.Mapped['JobIndustry'] = so.relationship(back_populates='categories')
     portfolios: so.WriteOnlyMapped['Portfolio'] = so.relationship(back_populates='job_category')
+
+    @staticmethod
+    def generate_slug(slug):
+        _slug = slugify(slug)
+        unique_slug = _slug
+        counter = 1
+        
+        while JobCategory.exists_slug(unique_slug):
+            unique_slug = f"{_slug}-{counter}"
+            counter += 1
+
+        return unique_slug
+	
+    @classmethod
+    def exists_slug(cls, slug):
+        existing_slug = cls.query.filter_by(slug=slug).first()
+        return existing_slug
+
+
     def __repr__(self):  # pragma: no cover
         return '<Job Category {}>'.format(self.name)
     
@@ -465,37 +404,33 @@ class JobIndustry(Updateable, db.Model):
     __tablename__ = 'job_industries'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    '''
-    TODO: create seeder @ 
-        Advertising and marketing,
-        Aerospace,
-        Agriculture,
-        Computer and technology,
-        Construction,
-        Education,
-        Energy,
-        Entertainment,
-        Fashion,
-        Finance and economic,
-        Food and beverage,
-        Health care,
-        Hospitality,
-        Manufacturing,
-        Media and news,
-        Mining,
-        Pharmaceutical,
-        Telecommunication,
-        Transportation
-    ''' 
     name: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True)
     slug: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True, unique=True)
-    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text)
-    status: so.Mapped[bool] = so.mapped_column(default=False)
+    description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, nullable=True)
+    status: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=True, nullable=True)
     created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
 
     categories: so.WriteOnlyMapped['JobCategory'] = so.relationship(back_populates='industry')
+
+    @staticmethod
+    def generate_slug(slug):
+        _slug = slugify(slug)
+        unique_slug = _slug
+        counter = 1
+        
+        while JobIndustry.exists_slug(unique_slug):
+            unique_slug = f"{_slug}-{counter}"
+            counter += 1
+
+        return unique_slug
+	
+    @classmethod
+    def exists_slug(cls, slug):
+        existing_slug = cls.query.filter_by(slug=slug).first()
+        return existing_slug
+
 
     def __repr__(self):  # pragma: no cover
         return '<Job Industries {}>'.format(self.name)

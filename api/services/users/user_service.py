@@ -1,3 +1,4 @@
+# app/services/users/user_service.py
 from flask import abort
 
 from api import db
@@ -9,12 +10,13 @@ class UserService(IUser):
         return db.session.get(User, id) or abort(404)
     
     def get_users(self):
-        return User.select()
+        return User.query \
+                .order_by(User.id.desc())
     
     def get_user_by_given_column_name(self, column_name, value):
         if hasattr(User, column_name):
             column_name = getattr(User, column_name)
-            return db.session.scalar(User.select().filter_by(column_name=value))
+            return db.session.scalar(User.query.filter_by(column_name=value))
         abort(404)
     
     def create_user(self, args: dict):

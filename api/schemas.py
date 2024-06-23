@@ -1,9 +1,10 @@
 from marshmallow import validate, validates, validates_schema, \
     ValidationError, post_dump
+from flask_marshmallow import validate as flask_ma_validate
 
 from api import ma, db
 from api.services.auth.routes import token_auth
-from api.models import User
+from api.models import User, Portfolio
 
 paginated_schema_cache = {}
 
@@ -146,3 +147,30 @@ class PasswordResetSchema(ma.Schema):
 class OAuth2Schema(ma.Schema):
     code = ma.String(required=True)
     state = ma.String(required=True)
+
+
+class PortfolioSchema(ma.Schema):
+    class Meta:
+        model = Portfolio
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    about = ma.String(required=True)
+    hourly_rate = ma.String(required=True)
+    work_preference = ma.List(ma.String(), required=True)
+    job_industries = ma.List(ma.String(), required=True)
+    skills = ma.List(ma.String(), required=False)
+    portfolio_link = ma.String(required=False)
+    linkedin_link = ma.String(required=False)
+    job_category_id = ma.Integer(required=True)
+    job_career_level_id = ma.Integer(required=True)
+    job_experience_id = ma.Integer(required=True)
+    resume = ma.File(required=False, validate=flask_ma_validate.FileSize(min="1 MiB", max="2 MiB"))
+    photo_attachment_id = ma.Integer(required=False)
+    user_id = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)
+
+# class UpdatePortfolioSchema(PortfolioSchema):
+
+#     user_id = ma.Integer(required=True)
