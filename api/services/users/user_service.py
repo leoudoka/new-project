@@ -26,7 +26,7 @@ class UserService(IUser):
             db.session.commit()
             return user_data
         except Exception as e:
-            self.sqlalchemy.session.rollback()
+            db.session.rollback()
             raise e
         
     def update_user(self, args: dict):

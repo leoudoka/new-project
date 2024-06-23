@@ -17,10 +17,13 @@ portfolios_schema = PortfolioSchema(many=True)
 
 
 @portfolio.route('/', methods=['POST'])
+@authenticate(token_auth)
 @body(portfolio_schema, location='form', media_type='multipart/form-data')
 @response(portfolio_schema, 201)
 def create_portfolio(args):
     """Register a new portfolio"""
+    auth_user = token_auth.current_user()
+    args['user_id'] = auth_user.id
     return portfolio_service.create_portfolio(args)
 
 

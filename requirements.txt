@@ -1,5 +1,6 @@
 alembic==1.13.1
 apifairy==1.4.0
+cloudinary==1.40.0
 faker==25.2.0
 flask==3.0.3
 flask-cors==4.0.1
