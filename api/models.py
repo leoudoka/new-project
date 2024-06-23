@@ -57,8 +57,12 @@ class Token(db.Model):
     def clean():
         """Remove any tokens that have been expired for more than a day."""
         yesterday = datetime.utcnow() - timedelta(days=1)
-        db.session.execute(Token.delete().where(
-            Token.refresh_expiration < yesterday))
+        tokens = Token.query.filter(Token.refresh_expiration < yesterday)\
+			.all()
+        if tokens:
+            for token in tokens:
+                db.session.delete(token)
+                db.session.commit()
 
     @staticmethod
     def from_jwt(access_token_jwt):
@@ -67,7 +71,7 @@ class Token(db.Model):
             access_token = jwt.decode(access_token_jwt,
                                       current_app.config['SECRET_KEY'],
                                       algorithms=['HS256'])['token']
-            return db.session.scalar(Token.select().filter_by(
+            return db.session.scalar(Token.query.filter_by(
                 access_token=access_token))
         except jwt.PyJWTError:
             pass
@@ -87,12 +91,12 @@ class User(UserMixin, Updateable, db.Model):
         sa.String(120), index=True, unique=True)
     gender: so.Mapped[Optional[enum.Enum]] = so.mapped_column(
         'gender', sa.Enum('male', 'female', 'not-specified'), 
-        default='not-specified')
+        default='not-specified', nullable=True)
     role: so.Mapped[enum.Enum] = so.mapped_column(
-        'role', sa.Enum('admin', 'sub-admin', 'recruiter', 'talent', 'student'), 
-        default='not-specified')
+        'role', sa.Enum('admin', 'sub-admin', 'recruiter', 'talent', 'student', 'not-specified'), 
+        default='not-specified', nullable=True)
     dob: so.Mapped[Optional[datetime.date]] = so.mapped_column(sa.Date, index=True, nullable=True)
-    mobile_number: so.Mapped[Optional[str]] = so.mapped_column(sa.String(15))
+    mobile_number: so.Mapped[Optional[str]] = so.mapped_column(sa.String(15), nullable=True)
     password_harsh: so.Mapped[Optional[str]] = so.mapped_column(sa.String(256))
     email_verified_at: so.Mapped[datetime] = so.mapped_column(nullable=True)
     last_seen: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
@@ -118,9 +122,8 @@ class User(UserMixin, Updateable, db.Model):
     def __repr__(self):  # pragma: no cover
         return '<User {}>'.format(f"{self.first_name} {self.last_name}")
 
-    @property
-    def url(self):
-        return url_for('users.get', id=self.id)
+    def get_roles(self):
+        return self.role
 
     @property
     def has_password(self):

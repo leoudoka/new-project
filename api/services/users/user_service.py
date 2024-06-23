@@ -32,7 +32,7 @@ class UserService(IUser):
             if args.get('id'):
                 user_to_update = self.get_user_by_id_or_404(args.get('id'))
                 if user_to_update:
-                    user_to_update.update()
+                    user_to_update.update(args)
                     db.session.commit()
                     return user_to_update
 

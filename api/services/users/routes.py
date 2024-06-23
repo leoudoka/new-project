@@ -14,8 +14,11 @@ user_schema = UserSchema()
 users_schema = UserSchema(many=True)
 update_user_schema = UpdateUserSchema(partial=True)
 
+@token_auth.get_user_roles
+def get_user_roles(user):
+    return user.get_roles()
 
-@users.route('/users', methods=['POST'])
+@users.route('/', methods=['POST'])
 @body(user_schema)
 @response(user_schema, 201)
 def create_user(args):
@@ -23,7 +26,7 @@ def create_user(args):
     return user_service.create_user(args)
 
 
-@users.route('/users', methods=['GET'])
+@users.route('/', methods=['GET'])
 @authenticate(token_auth)
 @paginated_response(users_schema)
 def get_users():
@@ -31,7 +34,7 @@ def get_users():
     return user_service.get_users()
 
 
-@users.route('/users/<int:id>', methods=['GET'])
+@users.route('/<int:id>', methods=['GET'])
 @authenticate(token_auth)
 @response(user_schema)
 @other_responses({404: 'User not found'})
@@ -40,7 +43,7 @@ def get_user_by_id_or_404(id):
     return user_service.get_user_by_id_or_404(id)
 
 
-@users.route('/users/<username>', methods=['GET'])
+@users.route('/<username>', methods=['GET'])
 @authenticate(token_auth)
 @response(user_schema)
 @other_responses({404: 'User not found'})

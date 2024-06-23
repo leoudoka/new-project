@@ -74,8 +74,11 @@ class UserSchema(ma.SQLAlchemySchema):
                                                    validate.Email()])
     password = ma.String(required=True, load_only=True,
                          validate=validate.Length(min=3))
-    dob = ma.String(required=True)
-    mobile_number = ma.String(required=True)
+    username = ma.String(required=False)
+    gender = ma.String(required=False)
+    role = ma.String(required=True)
+    dob = ma.String(required=False)
+    mobile_number = ma.String(required=False)
     has_password = ma.Boolean(dump_only=True)
     last_seen = ma.auto_field(dump_only=True)
     created_at = ma.auto_field(dump_only=True)
@@ -88,16 +91,16 @@ class UserSchema(ma.SQLAlchemySchema):
         user = token_auth.current_user()
         old_username = user.username if user else None
         if value != old_username and \
-                db.session.scalar(User.select().filter_by(username=value)):
-            raise ValidationError('Use a different username.')
+                db.session.scalar(User.query.filter_by(username=value)):
+            raise ValidationError('Username already exits.')
 
     @validates('email')
     def validate_email(self, value):
         user = token_auth.current_user()
         old_email = user.email if user else None
         if value != old_email and \
-                db.session.scalar(User.select().filter_by(email=value)):
-            raise ValidationError('Use a different email.')
+                db.session.scalar(User.query.filter_by(email=value)):
+            raise ValidationError('Email already exits.')
 
     @post_dump
     def fix_datetimes(self, data, **kwargs):
