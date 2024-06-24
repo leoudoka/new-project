@@ -111,6 +111,8 @@ class User(UserMixin, Updateable, db.Model):
         foreign_keys='Employer.user_id', back_populates='user')
     portfolio: so.WriteOnlyMapped['Portfolio'] = so.relationship(
         foreign_keys='Portfolio.user_id', back_populates='user')
+    recruiter: so.WriteOnlyMapped['Recruiter'] = so.relationship(
+        foreign_keys='Recruiter.user_id', back_populates='user')
     jobs: so.WriteOnlyMapped['Job'] = so.relationship(back_populates='user')
     applicantions: so.WriteOnlyMapped['JobApplicant'] = so.relationship(
         foreign_keys='JobApplicant.user_id', back_populates='user')
@@ -243,7 +245,25 @@ class Portfolio(Updateable, db.Model):
     def category(self):
         return self.job_category.name
 
-    
+
+class Recruiter(Updateable, db.Model):
+    __tablename__ = 'recruiters'
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    scope: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
+    hourly_rate: so.Mapped[Optional[str]] = so.mapped_column(sa.String(30), nullable=True)
+    work_preference: so.Mapped[str] = so.mapped_column(sa.String(64))
+    contract_type: so.Mapped[str] = so.mapped_column(sa.String(64))
+    user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
+    created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+    updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+
+    user: so.Mapped[User] = so.relationship(back_populates='recruiter')
+
+    def __repr__(self):  # pragma: no cover
+        return '<Recruiter {}>'.format(self.user.first_name)
+
+
 class Attachment(Updateable, db.Model):
     __tablename__ = 'attachments'
 
