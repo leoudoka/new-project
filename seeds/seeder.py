@@ -1,14 +1,15 @@
 import os
 
-from flask_seeder import Seeder
+from flask_seeder import Seeder, Faker, generator
 from werkzeug.security import generate_password_hash
 
 from api.models import JobIndustry, JobCategory, JobExperience, JobCareerLevel, \
-    User, JobContractType
+    User, JobContractType, Employer, Organization
 from SQL.jobs_data import INDUSTRY_DATA, INDUSTRY_CATEGORY_DATA, \
-    INDUSTRY_JOB_EXPERIENCE_DATA, INDUSTRY_JOB_CAREER_LEVEL_DATA, INDUSTRY_JOB_CONTRACT_TYPE_DATA
+        INDUSTRY_JOB_EXPERIENCE_DATA, INDUSTRY_JOB_CAREER_LEVEL_DATA, \
+            INDUSTRY_JOB_CONTRACT_TYPE_DATA, EMPLOYERS_DATA, EMPLOYER_ORG_DATA
 
-class UserSeeder(Seeder):
+class AdminUserSeeder(Seeder):
     def __init__(self):
         super().__init__()
         self.priority = 1
@@ -29,6 +30,31 @@ class UserSeeder(Seeder):
         except:
             self.db.session.rollback()
 
+class EmployersUserSeeder(Seeder):
+    def __init__(self):
+        super().__init__()
+        self.priority = 2
+
+    def run(self):
+        faker = Faker(
+            cls=User,
+            init={
+                'first_name': generator.Name(),
+                'last_name': '',
+                'email': generator.Email(),
+                'role': 'employer',
+                'password_harsh': generate_password_hash('Password123#')
+            }
+        )
+
+        for user in faker.create(5):
+            try:
+                print("Adding user: %s" % user)
+                self.db.session.add(user)
+                self.db.session.commit()
+            except:
+                self.db.session.rollback()
+
 
 class JobIndustrySeeder(Seeder):
     def __init__(self):
@@ -43,6 +69,19 @@ class JobIndustrySeeder(Seeder):
             print('Adding rate: %s' % industry)
             industries.append(JobIndustry(**industry))
         self.db.session.add_all(industries)
+
+
+class EmployersSeeder(Seeder):
+    def __init__(self):
+        super().__init__()
+        self.priority = 3
+
+    def run(self):
+        employers = []
+        for employer in EMPLOYERS_DATA:
+            print('Adding employer: %s' % employer)
+            employers.append(Employer(**employer))
+        self.db.session.add_all(employers)
 
 
 class JobIndustryCategorySeeder(Seeder):
@@ -112,3 +151,16 @@ class JobContractTypeSeeder(Seeder):
             print('Adding job contract type: %s' % job_contract_type)
             job_contract_types.append(JobContractType(**job_contract_type))
         self.db.session.add_all(job_contract_types)
+
+
+class OrganizationSeeder(Seeder):
+    def __init__(self):
+        super().__init__()
+        self.priority = 7
+
+    def run(self):
+        orgs = []
+        for org in EMPLOYER_ORG_DATA:
+            print('Adding employer: %s' % org)
+            orgs.append(Organization(**org))
+        self.db.session.add_all(orgs)

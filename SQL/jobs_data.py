@@ -140,3 +140,17 @@ INDUSTRY_JOB_CONTRACT_TYPE_DATA = [
     {"type": "Internship"},
     {"type": "Temporary"}
 ]
+
+EMPLOYERS_DATA = [
+    {"user_id": 2, "approved_by": 1},
+    {"user_id": 3, "approved_by": 1},
+    {"user_id": 4, "approved_by": 1},
+    {"user_id": 5, "approved_by": 1}
+]
+
+EMPLOYER_ORG_DATA = [
+    {"employer_id": 1, "title": "Company A"},
+    {"employer_id": 2, "title": "Company BC Int."},
+    {"employer_id": 3, "title": "Company XYZ Holdings"},
+    {"employer_id": 4, "title": "Company Q+ Ltd"}
+]

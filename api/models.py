@@ -94,7 +94,7 @@ class User(UserMixin, Updateable, db.Model):
         'gender', sa.Enum('male', 'female', 'not-specified'), 
         default='not-specified', nullable=True)
     role: so.Mapped[enum.Enum] = so.mapped_column(
-        'role', sa.Enum('admin', 'sub-admin', 'recruiter', 'talent', 'student', 'not-specified'), 
+        'role', sa.Enum('admin', 'sub-admin', 'employer', 'recruiter', 'talent', 'student', 'not-specified'), 
         default='not-specified', nullable=True)
     dob: so.Mapped[Optional[datetime.date]] = so.mapped_column(sa.Date, index=True, nullable=True)
     mobile_number: so.Mapped[Optional[str]] = so.mapped_column(sa.String(15), nullable=True)
@@ -251,14 +251,15 @@ class Recruiter(Updateable, db.Model):
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     scope: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
-    hourly_rate: so.Mapped[Optional[str]] = so.mapped_column(sa.String(30), nullable=True)
     work_preference: so.Mapped[str] = so.mapped_column(sa.String(64))
     contract_type: so.Mapped[str] = so.mapped_column(sa.String(64))
+    org_id: so.Mapped[str] = so.mapped_column(sa.ForeignKey('organizations.id'), index=True)
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
 
     user: so.Mapped[User] = so.relationship(back_populates='recruiter')
+    organization: so.Mapped['Organization'] = so.relationship(back_populates='recruiters')
 
     def __repr__(self):  # pragma: no cover
         return '<Recruiter {}>'.format(self.user.first_name)
@@ -500,13 +501,10 @@ class Employer(Updateable, db.Model):
     __tablename__ = 'employers'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    title: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), index=True)
-    slug: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), index=True, unique=True)
-    about: so.Mapped[Optional[str]] = so.mapped_column(sa.Text)
+    about: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, nullable=True)
     state_id: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True)
-    country_id: so.Mapped[int] = so.mapped_column(sa.Integer, nullable=False)
-    address_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Address.id), index=True)
-    attachment_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Attachment.id), index=True)
+    country_id: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True)
+    address_id: so.Mapped[Optional[int]] = so.mapped_column(sa.ForeignKey(Address.id), index=True, nullable=True)
     is_approved: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=False)
     status: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=False)
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
@@ -514,29 +512,12 @@ class Employer(Updateable, db.Model):
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
 
-    # jobs: so.Mapped['Job'] = so.relationship(back_populates='employer')
     jobs: so.WriteOnlyMapped['Job'] = so.relationship(back_populates='employer')
-    applicants: so.Mapped['JobApplicant'] = so.relationship(
-        foreign_keys='JobApplicant.employer_id', back_populates='employer')
+    applicants: so.Mapped['JobApplicant'] = so.relationship(back_populates='employer')
     user: so.Mapped['User'] = so.relationship(
         foreign_keys='Employer.user_id', back_populates='employer')
+    organization: so.Mapped['Organization'] = so.relationship( back_populates='employer')
     
-    @staticmethod
-    def generate_slug(slug):
-        _slug = slugify(slug)
-        unique_slug = _slug
-        counter = 1
-        
-        while Employer.exists_slug(unique_slug):
-            unique_slug = f"{_slug}-{counter}"
-            counter += 1
-
-        return unique_slug
-	
-    @classmethod
-    def exists_slug(cls, slug):
-        existing_slug = cls.query.filter_by(slug=slug).first()
-        return existing_slug
 
 class JobApplicant(Updateable, db.Model):
     __tablename__ = 'job_applicants'
@@ -566,3 +547,38 @@ class JobApplicant(Updateable, db.Model):
         foreign_keys='JobApplicant.approved_by', back_populates='job_approvals')
     vetted_by_user: so.Mapped['User'] = so.relationship(
         foreign_keys='JobApplicant.vetted_by', back_populates='job_vet')
+    
+
+class Organization(Updateable, db.Model):
+    __tablename__ = 'organizations'
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    title: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), index=True)
+    slug: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), index=True, unique=True)
+    about: so.Mapped[Optional[str]] = so.mapped_column(sa.Text)
+    is_approved: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=False)
+    status: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=True)
+    employer_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Employer.id), index=True)
+    created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+    updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+
+    
+    employer: so.Mapped[Employer] = so.relationship(back_populates='organization')
+    recruiters: so.WriteOnlyMapped['Recruiter'] = so.relationship(back_populates='organization')
+    
+    @staticmethod
+    def generate_slug(slug):
+        _slug = slugify(slug)
+        unique_slug = _slug
+        counter = 1
+        
+        while Organization.exists_slug(unique_slug):
+            unique_slug = f"{_slug}-{counter}"
+            counter += 1
+
+        return unique_slug
+	
+    @classmethod
+    def exists_slug(cls, slug):
+        existing_slug = cls.query.filter_by(slug=slug).first()
+        return existing_slug
