@@ -6,7 +6,7 @@ from api import ma, db
 from api.services.auth.routes import token_auth
 from api.models import User, Portfolio, Job, JobCategory, JobIndustry, \
     JobExperience, JobCareerLevel, JobContractType, JobApplicant, Organization, \
-    Recruiter, Employer
+    Recruiter, Employer, Country, State
 
 paginated_schema_cache = {}
 
@@ -317,3 +317,21 @@ class RecruiterSchema(ma.Schema):
     user_id = ma.Integer(dump_only=True)
     created_at = ma.DateTime(dump_only=True)
     updated_at = ma.DateTime(dump_only=True)
+
+
+class CountrySchema(ma.Schema):
+    class Meta:
+        model = Recruiter
+
+    id = ma.Integer(dump_only=True)
+    name = ma.String(dump_only=False)
+
+
+class StateSchema(ma.Schema):
+    class Meta:
+        model = State
+
+    id = ma.Integer(dump_only=True)
+    name = ma.String(dump_only=False)
+    country_name = ma.String(dump_only=False)
+    country_code = ma.String(dump_only=False)

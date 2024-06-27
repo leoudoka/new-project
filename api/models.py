@@ -272,6 +272,10 @@ class State(Updateable, db.Model):
 
     country: so.Mapped[Country] = so.relationship(back_populates='states')
 
+    @property
+    def country_name(self):
+        return self.country.name
+
     def __repr__(self):  # pragma: no cover
         return '<States {}>'.format(self.name)
 
