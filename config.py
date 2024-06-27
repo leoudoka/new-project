@@ -13,7 +13,7 @@ def as_bool(value):
 
 class IConfig(metaclass=ABCMeta):
     # security options
-    ACCESS_TOKEN_MINUTES = int(os.environ.get('ACCESS_TOKEN_MINUTES') or '15')
+    ACCESS_TOKEN_MINUTES = int(os.environ.get('ACCESS_TOKEN_MINUTES') or '60')
     REFRESH_TOKEN_DAYS = int(os.environ.get('REFRESH_TOKEN_DAYS') or '7')
     REFRESH_TOKEN_IN_COOKIE = as_bool(os.environ.get(
         'REFRESH_TOKEN_IN_COOKIE') or 'yes')
@@ -21,8 +21,7 @@ class IConfig(metaclass=ABCMeta):
     RESET_TOKEN_MINUTES = int(os.environ.get('RESET_TOKEN_MINUTES') or '15')
     PASSWORD_RESET_URL = os.environ.get('PASSWORD_RESET_URL') or \
         'http://localhost:3000/reset'
-    USE_CORS = as_bool(os.environ.get('USE_CORS') or 'yes')
-    CORS_SUPPORTS_CREDENTIALS = True
+    USE_CORS = True
 
     # API documentation
     APIFAIRY_TITLE = 'Smarthub API'
@@ -41,8 +40,9 @@ class IConfig(metaclass=ABCMeta):
 
 
 class DevelopmentConfig(IConfig):
+    PORT = os.environ.get('PORT')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
-
+    SQLALCHEMY_ECHO = True
     SECRET_KEY = os.environ.get('SECRET_KEY')
     DISABLE_AUTH = as_bool(os.environ.get('DISABLE_AUTH'))
     OAUTH2_PROVIDERS = {}
@@ -51,6 +51,7 @@ class DevelopmentConfig(IConfig):
 
 
 class ProductionConfig(IConfig):
+    PORT = os.environ.get('PORT')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 
     SECRET_KEY = os.environ.get('SECRET_KEY', 'top-secret!')

@@ -1,23 +1,23 @@
-# app/services/users/i_user_service.py
+# app/services/portfolio/i_portfolio_service.py
 from abc import ABCMeta, abstractmethod
 
-class IUser(metaclass=ABCMeta):
+class IPortfolio(metaclass=ABCMeta):
 	@abstractmethod
-	def get_users(self):
+	def get_portfolios(self):
 		raise NotImplementedError
 
 	@abstractmethod
-	def create_user(self):
+	def create_portfolio(self):
 		raise NotImplementedError
 
 	@abstractmethod
-	def get_user_by_id_or_404(self, id: int):
+	def get_portfolio_by_id_or_404(self, id: int):
 		raise NotImplementedError
 	
 	@abstractmethod
-	def update_user(self, args: dict):
+	def update_portfolio(self, args: dict):
 		raise NotImplementedError
 	
 	@abstractmethod
-	def delete_user(self, id: int):
+	def delete_portfolio(self, id: int):
 		raise NotImplementedError

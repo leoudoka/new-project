@@ -1,9 +1,12 @@
 from marshmallow import validate, validates, validates_schema, \
     ValidationError, post_dump
+from flask_marshmallow import validate as flask_ma_validate
 
 from api import ma, db
 from api.services.auth.routes import token_auth
-from api.models import User
+from api.models import User, Portfolio, Job, JobCategory, JobIndustry, \
+    JobExperience, JobCareerLevel, JobContractType, JobApplicant, Organization, \
+    Recruiter, Employer
 
 paginated_schema_cache = {}
 
@@ -74,6 +77,11 @@ class UserSchema(ma.SQLAlchemySchema):
                                                    validate.Email()])
     password = ma.String(required=True, load_only=True,
                          validate=validate.Length(min=3))
+    username = ma.String(required=False)
+    gender = ma.String(required=False)
+    role = ma.String(required=True)
+    dob = ma.String(required=False)
+    mobile_number = ma.String(required=False)
     has_password = ma.Boolean(dump_only=True)
     last_seen = ma.auto_field(dump_only=True)
     created_at = ma.auto_field(dump_only=True)
@@ -86,16 +94,16 @@ class UserSchema(ma.SQLAlchemySchema):
         user = token_auth.current_user()
         old_username = user.username if user else None
         if value != old_username and \
-                db.session.scalar(User.select().filter_by(username=value)):
-            raise ValidationError('Use a different username.')
+                db.session.scalar(User.query.filter_by(username=value)):
+            raise ValidationError('Username already exits.')
 
     @validates('email')
     def validate_email(self, value):
         user = token_auth.current_user()
         old_email = user.email if user else None
         if value != old_email and \
-                db.session.scalar(User.select().filter_by(email=value)):
-            raise ValidationError('Use a different email.')
+                db.session.scalar(User.query.filter_by(email=value)):
+            raise ValidationError('Email already exits.')
 
     @post_dump
     def fix_datetimes(self, data, **kwargs):
@@ -141,3 +149,171 @@ class PasswordResetSchema(ma.Schema):
 class OAuth2Schema(ma.Schema):
     code = ma.String(required=True)
     state = ma.String(required=True)
+
+
+class PortfolioSchema(ma.Schema):
+    class Meta:
+        model = Portfolio
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    about = ma.String(required=False)
+    hourly_rate = ma.String(required=True)
+    work_preference = ma.List(ma.String(), required=True)
+    job_industries = ma.List(ma.String(), required=True)
+    skills = ma.List(ma.String(), required=True)
+    portfolio_link = ma.String(required=False)
+    linkedin_link = ma.String(required=False)
+    job_category_id = ma.Integer(required=True)
+    job_career_level_id = ma.Integer(required=True)
+    job_experience_id = ma.Integer(required=True)
+    resume = ma.File(required=True, validate=flask_ma_validate.FileSize(max="2 MiB"))
+    photo_attachment = ma.File(required=False, validate=flask_ma_validate.FileSize(max="2 MiB"))
+    resume_attachment = ma.String(dump_only=True)
+    photo_attachment = ma.String(dump_only=True)
+    user_id = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)
+
+# class UpdatePortfolioSchema(PortfolioSchema):
+
+#     user_id = ma.Integer(required=True)
+
+class JobSchema(ma.Schema):
+    class Meta:
+        model = Job
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    title = ma.String(required=False)
+    slug = ma.String(dump_only=True)
+    summary = ma.String(required=True)
+    description = ma.String(required=True)
+    featured = ma.Boolean(dump_only=True)
+    status = ma.String(dump_only=True)
+    user_id = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)
+
+
+class JobIndustriesSchema(ma.Schema):
+    class Meta:
+        model = JobIndustry
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    name = ma.String(required=False)
+    slug = ma.String(dump_only=True)
+    description = ma.String(required=False)
+    status = ma.Boolean(dump_only=True)
+    created_by = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)
+
+
+class JobCategorySchema(ma.Schema):
+    class Meta:
+        model = JobCategory
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    name = ma.String(required=False)
+    slug = ma.String(dump_only=True)
+    description = ma.String(required=False)
+    status = ma.Boolean(dump_only=True)
+    job_industry_id = ma.Integer(dump_only=True)
+    created_by = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)
+
+
+class JobExperienceSchema(ma.Schema):
+    class Meta:
+        model = JobExperience
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    experience = ma.String(required=True)
+    slug = ma.String(dump_only=True)
+    description = ma.String(required=False)
+    status = ma.Boolean(dump_only=True)
+    created_by = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)
+
+
+class JobCareerLevelSchema(ma.Schema):
+    class Meta:
+        model = JobCareerLevel
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    level = ma.String(required=True)
+    slug = ma.String(dump_only=True)
+    description = ma.String(required=False)
+    status = ma.Boolean(dump_only=True)
+    created_by = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)
+
+
+class JobContractTypeSchema(ma.Schema):
+    class Meta:
+        model = JobContractType
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    type = ma.String(required=True)
+    slug = ma.String(dump_only=True)
+    description = ma.String(required=False)
+    status = ma.Boolean(dump_only=True)
+    created_by = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)
+
+
+class EmployerSchema(ma.Schema):
+    class Meta:
+        model = Employer
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    about = ma.String(required=False)
+    state_id = ma.Integer(required=False)
+    country_id = ma.Integer(required=False)
+    address_id = ma.Integer(required=False)
+    status = ma.Boolean(dump_only=True)
+    is_approved = ma.Boolean(dump_only=True)
+    user_id = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)
+
+class JobOrganizationSchema(ma.Schema):
+    class Meta:
+        model = Organization
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    title = ma.String(required=False)
+    slug = ma.String(required=False)
+    about = ma.String(required=False)
+    is_approved = ma.Boolean(dump_only=True)
+    status = ma.Boolean(dump_only=True)
+    employer_id = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)
+
+
+class RecruiterSchema(ma.Schema):
+    class Meta:
+        model = Recruiter
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    scope = ma.String(required=False)
+    work_preference = ma.String(required=False)
+    contract_type = ma.String(required=False)
+    org_id = ma.Integer(required=False)
+    user_id = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)

@@ -1,8 +1,8 @@
+# app/services/users/routes.py
 from apifairy.decorators import other_responses
 from flask import Blueprint, abort
 from apifairy import authenticate, body, response
 
-from api import db
 from api.services.users.user_service import UserService
 from api.schemas import UserSchema, UpdateUserSchema, EmptySchema
 from api.services.auth.auth_service import token_auth
@@ -14,8 +14,11 @@ user_schema = UserSchema()
 users_schema = UserSchema(many=True)
 update_user_schema = UpdateUserSchema(partial=True)
 
+@token_auth.get_user_roles
+def get_user_roles(user):
+    return user.get_roles()
 
-@users.route('/users', methods=['POST'])
+@users.route('/', methods=['POST'])
 @body(user_schema)
 @response(user_schema, 201)
 def create_user(args):
@@ -23,7 +26,7 @@ def create_user(args):
     return user_service.create_user(args)
 
 
-@users.route('/users', methods=['GET'])
+@users.route('/', methods=['GET'])
 @authenticate(token_auth)
 @paginated_response(users_schema)
 def get_users():
@@ -31,7 +34,7 @@ def get_users():
     return user_service.get_users()
 
 
-@users.route('/users/<int:id>', methods=['GET'])
+@users.route('/<int:id>', methods=['GET'])
 @authenticate(token_auth)
 @response(user_schema)
 @other_responses({404: 'User not found'})
@@ -40,10 +43,18 @@ def get_user_by_id_or_404(id):
     return user_service.get_user_by_id_or_404(id)
 
 
-@users.route('/users/<username>', methods=['GET'])
+@users.route('/<username>', methods=['GET'])
 @authenticate(token_auth)
 @response(user_schema)
 @other_responses({404: 'User not found'})
 def get_by_username(username):
     """Retrieve a user by username"""
     return user_service.get_user_by_given_column_name(username=username)
+
+
+@users.route('/', methods=['PUT, PATCH'])
+@body(user_schema)
+@response(user_schema, 201)
+def update_user(args):
+    """Update existing user"""
+    return user_service.update_user(args)
