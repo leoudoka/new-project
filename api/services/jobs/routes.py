@@ -5,7 +5,8 @@ from apifairy import authenticate, body, response
 
 from api.services.auth.auth_service import token_auth
 from api.schemas import JobSchema, JobIndustriesSchema, JobCategorySchema, \
-    JobExperienceSchema, JobCareerLevelSchema, JobContractTypeSchema, EmptySchema
+    JobExperienceSchema, JobCareerLevelSchema, JobContractTypeSchema, \
+        EmptySchema, JobOrganizationSchema
 from api.services.jobs.job_service import JobService
 from api.decorators import paginated_response
 
@@ -24,6 +25,8 @@ job_career_level_schema = JobCareerLevelSchema()
 jobs_career_levels_schema = JobCareerLevelSchema(many=True)
 job_contract_type_schema = JobContractTypeSchema()
 job_contract_types_schema = JobContractTypeSchema(many=True)
+job_org_schema = JobOrganizationSchema()
+job_orgs_schema = JobOrganizationSchema(many=True)
 
 @jobs.route('/', methods=['POST'])
 @authenticate(token_auth)
@@ -76,6 +79,13 @@ def get_job_career_levels():
 def get_job_contract_types():
     """Retrieve all contract job types"""
     return job_service.get_job_contract_types()
+
+
+@jobs.route('/organizations', methods=['GET'])
+@paginated_response(job_orgs_schema)
+def get_job_organizations():
+    """Retrieve all job organizations"""
+    return job_service.get_job_organizations()
 
 
 @jobs.route('/<int:id>', methods=['GET'])

@@ -21,8 +21,7 @@ class IConfig(metaclass=ABCMeta):
     RESET_TOKEN_MINUTES = int(os.environ.get('RESET_TOKEN_MINUTES') or '15')
     PASSWORD_RESET_URL = os.environ.get('PASSWORD_RESET_URL') or \
         'http://localhost:3000/reset'
-    USE_CORS = as_bool(os.environ.get('USE_CORS') or 'yes')
-    CORS_SUPPORTS_CREDENTIALS = True
+    USE_CORS = True
 
     # API documentation
     APIFAIRY_TITLE = 'Smarthub API'
@@ -41,6 +40,7 @@ class IConfig(metaclass=ABCMeta):
 
 
 class DevelopmentConfig(IConfig):
+    PORT = os.environ.get('PORT')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
     SQLALCHEMY_ECHO = True
     SECRET_KEY = os.environ.get('SECRET_KEY')
@@ -51,6 +51,7 @@ class DevelopmentConfig(IConfig):
 
 
 class ProductionConfig(IConfig):
+    PORT = os.environ.get('PORT')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 
     SECRET_KEY = os.environ.get('SECRET_KEY', 'top-secret!')

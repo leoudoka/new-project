@@ -50,3 +50,11 @@ def get_user_by_id_or_404(id):
 def get_by_username(username):
     """Retrieve a user by username"""
     return user_service.get_user_by_given_column_name(username=username)
+
+
+@users.route('/', methods=['PUT, PATCH'])
+@body(user_schema)
+@response(user_schema, 201)
+def update_user(args):
+    """Update existing user"""
+    return user_service.update_user(args)

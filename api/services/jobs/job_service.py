@@ -7,7 +7,8 @@ import cloudinary.uploader
 
 from api import db
 from api.models import Job, JobCategory, JobIndustry, \
-    JobExperience, JobCareerLevel, JobContractType, JobApplicant
+    JobExperience, JobCareerLevel, JobContractType, JobApplicant, \
+    Organization
 from .i_job_service import IJob
 
 
@@ -44,6 +45,10 @@ class JobService(IJob):
     def get_job_contract_types(self):
         return JobContractType.query \
                 .order_by(JobContractType.id.desc())
+    
+    def get_job_organizations(self):
+        return Organization.query \
+                .order_by(Organization.id.desc())
     
     def get_job_by_given_column_name(self, column_name, value):
         if hasattr(Job, column_name):

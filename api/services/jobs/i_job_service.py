@@ -25,6 +25,10 @@ class IJob(metaclass=ABCMeta):
 	@abstractmethod
 	def get_job_contract_types(self):
 		raise NotImplementedError
+	
+	@abstractmethod
+	def get_job_organizations(self):
+		raise NotImplementedError
 
 	@abstractmethod
 	def create_job(self):

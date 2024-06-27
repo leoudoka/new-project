@@ -10,6 +10,7 @@ from typing import Optional
 from time import time
 from werkzeug.security import generate_password_hash, check_password_hash
 from slugify import slugify
+from decimal import Decimal
 
 from api.app import db
 
@@ -202,8 +203,8 @@ class Address(Updateable, db.Model):
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     address: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), index=True)
-    state_id: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True)
-    country_id: so.Mapped[int] = so.mapped_column(sa.Integer, nullable=False)   
+    state_id: so.Mapped[Optional[int]] = so.mapped_column(sa.ForeignKey('states.id'))
+    country_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('countries.id'))   
     postal_code: so.Mapped[Optional[str]] = so.mapped_column(sa.String(8), index=True)
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
@@ -213,6 +214,66 @@ class Address(Updateable, db.Model):
 
     def __repr__(self):  # pragma: no cover
         return '<Address {}>'.format(self.address)
+    
+
+class Country(Updateable, db.Model):
+    __tablename__ = 'countries'
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    name: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), nullable=True)
+    iso3: so.Mapped[Optional[str]] = so.mapped_column(sa.String(3), nullable=True)
+    numeric_code: so.Mapped[Optional[str]] = so.mapped_column(sa.String(3), nullable=True)
+    iso2: so.Mapped[Optional[str]] = so.mapped_column(sa.String(2), nullable=True)
+    phonecode: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
+    capital: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
+    currency: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
+    currency_name: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
+    currency_symbol: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
+    tld: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
+    native: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
+    region: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
+    region_id: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True)
+    subregion: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
+    subregion_id: so.Mapped[Optional[int]] = so.mapped_column(sa.Integer, nullable=True)
+    nationality: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
+    timezones: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, nullable=True)
+    translations: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, nullable=True)
+    latitude: so.Mapped[Optional[Decimal]] = so.mapped_column(sa.Numeric(10,8), nullable=True)
+    longitude: so.Mapped[Optional[Decimal]] = so.mapped_column(sa.Numeric(11, 8), nullable=True)
+    emoji: so.Mapped[Optional[str]] = so.mapped_column(sa.String(191), nullable=True)
+    emojiU: so.Mapped[Optional[str]] = so.mapped_column(sa.String(191), nullable=True)
+    created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+    updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+    flag: so.Mapped[Optional[bool]] = so.mapped_column(sa.Boolean, default=True)
+    wikiDataId: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
+
+    states: so.Mapped['State'] = so.relationship(back_populates='country')
+
+    def __repr__(self):  # pragma: no cover
+        return '<Country {}>'.format(self.name)
+    
+
+class State(Updateable, db.Model):
+    __tablename__ = 'states'
+
+    id: so.Mapped[int] = so.mapped_column(primary_key=True)
+    name: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), nullable=True)
+    country_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(Country.id))
+    country_code: so.Mapped[Optional[str]] = so.mapped_column(sa.String(2), nullable=True)
+    fips_code: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
+    iso2: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
+    type: so.Mapped[Optional[str]] = so.mapped_column(sa.String(191), nullable=True)
+    latitude: so.Mapped[Optional[Decimal]] = so.mapped_column(sa.Numeric(10,8), nullable=True)
+    longitude: so.Mapped[Optional[Decimal]] = so.mapped_column(sa.Numeric(11, 8), nullable=True)
+    created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+    updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+    flag: so.Mapped[Optional[bool]] = so.mapped_column(sa.Boolean, default=True)
+    wikiDataId: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
+
+    country: so.Mapped[Country] = so.relationship(back_populates='states')
+
+    def __repr__(self):  # pragma: no cover
+        return '<States {}>'.format(self.name)
 
 
 class Portfolio(Updateable, db.Model):
@@ -239,7 +300,7 @@ class Portfolio(Updateable, db.Model):
     job_category: so.Mapped['JobCategory'] = so.relationship(back_populates='portfolios')
 
     def __repr__(self):  # pragma: no cover
-        return '<Address {}>'.format(self.about)
+        return '<Portfolio {}>'.format(self.about)
     
     @property
     def category(self):

@@ -33,6 +33,9 @@ class UserService(IUser):
         try:
             if args.get('id'):
                 user_to_update = self.get_user_by_id_or_404(args.get('id'))
+                if args.get('country'):
+                    del args['country']
+                    del args['state']
                 if user_to_update:
                     user_to_update.update(args)
                     db.session.commit()

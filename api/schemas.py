@@ -5,7 +5,8 @@ from flask_marshmallow import validate as flask_ma_validate
 from api import ma, db
 from api.services.auth.routes import token_auth
 from api.models import User, Portfolio, Job, JobCategory, JobIndustry, \
-    JobExperience, JobCareerLevel, JobContractType, JobApplicant
+    JobExperience, JobCareerLevel, JobContractType, JobApplicant, Organization, \
+    Recruiter, Employer
 
 paginated_schema_cache = {}
 
@@ -267,5 +268,52 @@ class JobContractTypeSchema(ma.Schema):
     description = ma.String(required=False)
     status = ma.Boolean(dump_only=True)
     created_by = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)
+
+
+class EmployerSchema(ma.Schema):
+    class Meta:
+        model = Employer
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    about = ma.String(required=False)
+    state_id = ma.Integer(required=False)
+    country_id = ma.Integer(required=False)
+    address_id = ma.Integer(required=False)
+    status = ma.Boolean(dump_only=True)
+    is_approved = ma.Boolean(dump_only=True)
+    user_id = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)
+
+class JobOrganizationSchema(ma.Schema):
+    class Meta:
+        model = Organization
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    title = ma.String(required=False)
+    slug = ma.String(required=False)
+    about = ma.String(required=False)
+    is_approved = ma.Boolean(dump_only=True)
+    status = ma.Boolean(dump_only=True)
+    employer_id = ma.Integer(dump_only=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)
+
+
+class RecruiterSchema(ma.Schema):
+    class Meta:
+        model = Recruiter
+        ordered = True
+
+    id = ma.Integer(dump_only=True)
+    scope = ma.String(required=False)
+    work_preference = ma.String(required=False)
+    contract_type = ma.String(required=False)
+    org_id = ma.Integer(required=False)
+    user_id = ma.Integer(dump_only=True)
     created_at = ma.DateTime(dump_only=True)
     updated_at = ma.DateTime(dump_only=True)

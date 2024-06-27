@@ -12,7 +12,6 @@ import config
 db = SQLAlchemy()
 migrate = Migrate()
 ma = Marshmallow()
-cors = CORS()
 mail = Mail()
 apifairy = APIFairy()
 seeder = FlaskSeeder()
@@ -20,13 +19,11 @@ seeder = FlaskSeeder()
 def create_app(config_class):
     app = Flask(__name__)
     app.config.from_object(config_class)
-
-    # extensions
-    from api import models
+    if app.config['USE_CORS']:  # pragma: no branch
+        CORS(app, support_credentials=True)
     db.init_app(app)
     ma.init_app(app)
-    if app.config['USE_CORS']:  # pragma: no branch
-        cors.init_app(app)
+    
     mail.init_app(app)
     apifairy.init_app(app)
     seeder.init_app(app, db)
