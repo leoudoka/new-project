@@ -28,7 +28,7 @@ def get_portfolio_by_id_or_404(id):
     """Retrieve a country by id"""
     return country_service.get_country_by_id_or_404(id)
 
-@country.route('/states/', methods=['GET'])
+@country.route('/states', methods=['GET'])
 @response(states_schema)
 def get_states():
     """Retrieve all states"""

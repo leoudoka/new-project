@@ -202,10 +202,10 @@ class Address(Updateable, db.Model):
     __tablename__ = 'addresses'
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
-    address: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), index=True)
+    address: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
     state_id: so.Mapped[Optional[int]] = so.mapped_column(sa.ForeignKey('states.id'))
     country_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('countries.id'))   
-    postal_code: so.Mapped[Optional[str]] = so.mapped_column(sa.String(8), index=True)
+    postal_code: so.Mapped[Optional[str]] = so.mapped_column(sa.String(8), nullable=True)
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)

@@ -80,7 +80,7 @@ class UserSchema(ma.SQLAlchemySchema):
     username = ma.String(required=False)
     gender = ma.String(required=False)
     role = ma.String(required=True)
-    dob = ma.String(required=False)
+    dob = ma.Date(required=False)
     mobile_number = ma.String(required=False)
     has_password = ma.Boolean(dump_only=True)
     last_seen = ma.auto_field(dump_only=True)
@@ -105,16 +105,22 @@ class UserSchema(ma.SQLAlchemySchema):
                 db.session.scalar(User.query.filter_by(email=value)):
             raise ValidationError('Email already exits.')
 
-    @post_dump
-    def fix_datetimes(self, data, **kwargs):
-        data['last_seen'] += 'Z'
-        data['created_at'] += 'Z'
-        data['updated_at'] += 'Z'
-        return data
+
+class UpdateNewUserSchema(ma.Schema):
+    id = ma.Integer(required=True)
+    username = ma.String(required=False)
+    gender = ma.String(required=False)
+    dob = ma.Date(required=False)
+    mobile_number = ma.String(required=False)
+    country_id = ma.Integer(required=False)
+    state_id = ma.Integer(required=False)
 
 
 class UpdateUserSchema(UserSchema):
     old_password = ma.String(load_only=True, validate=validate.Length(min=3))
+    country_id = ma.Integer(required=False)
+    state_id = ma.Integer(required=False)
+
 
     @validates('old_password')
     def validate_old_password(self, value):

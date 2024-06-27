@@ -1,8 +1,8 @@
 # app/services/users/user_service.py
-from flask import abort
+from flask import abort, jsonify
 
 from api import db
-from api.models import User
+from api.models import User, Token, Address
 from .i_user_service import IUser
 
 class UserService(IUser):
@@ -32,15 +32,34 @@ class UserService(IUser):
     def update_user(self, args: dict):
         try:
             if args.get('id'):
-                user_to_update = self.get_user_by_id_or_404(args.get('id'))
-                if args.get('country'):
-                    del args['country']
-                    del args['state']
+                user_id = args.get('id')
+                user_to_update = self.get_user_by_id_or_404(user_id)
+                if args.get('country_id') or args.get('state_id'):
+                    try:
+                        user_address_data_exists = db.session.scalar(Address.query
+                                 .filter(Address.user_id == user_id))
+                        if user_address_data_exists:
+                            user_address_data = user_address_data_exists
+                        else:
+                            user_address_data = Address()
+                            user_address_data.user_id = user_id
+
+                        if args.get('country_id'):
+                            user_address_data.country_id = args.get('country_id')
+                            del args['country_id']
+                        if args.get('state_id'):
+                            user_address_data.state_id = args.get('state_id')
+                            del args['state_id']
+                        db.session.add(user_address_data)
+                        db.session.commit()
+                    except Exception as e:
+                        db.session.rollback()
+                
                 if user_to_update:
                     user_to_update.update(args)
                     db.session.commit()
                     return user_to_update
-
+            return jsonify({"error": "User ID not provided/found"}), 404
         except Exception as e:
             db.session.rollback()
             raise e

@@ -15,11 +15,11 @@ class CountryService(ICountry):
     
     def get_countries(self):
         return Country.query \
-                .order_by(Country.id.desc())
+                .order_by(Country.name.asc())
     
     def get_states(self):
         return State.query \
-                .order_by(State.id.desc())
+                .order_by(State.id.asc())
     
     def get_given_column_name(self, model, column_name, value):
         if hasattr(model, column_name):

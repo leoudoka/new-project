@@ -4,7 +4,7 @@ from flask import Blueprint, abort
 from apifairy import authenticate, body, response
 
 from api.services.users.user_service import UserService
-from api.schemas import UserSchema, UpdateUserSchema, EmptySchema
+from api.schemas import UserSchema, UpdateUserSchema, UpdateNewUserSchema
 from api.services.auth.auth_service import token_auth
 from api.decorators import paginated_response
 
@@ -13,6 +13,7 @@ users = Blueprint('users', __name__)
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
 update_user_schema = UpdateUserSchema(partial=True)
+update_new_user_schema = UpdateNewUserSchema()
 
 @token_auth.get_user_roles
 def get_user_roles(user):
@@ -52,9 +53,20 @@ def get_by_username(username):
     return user_service.get_user_by_given_column_name(username=username)
 
 
-@users.route('/', methods=['PUT, PATCH'])
-@body(user_schema)
-@response(user_schema, 201)
+@users.route('/details', methods=['PUT', 'PATCH'])
+@body(update_new_user_schema)
+@response(update_new_user_schema, 201)
+def update_new_user(args):
+    """Update new user"""
+    return user_service.update_user(args)
+
+
+@users.route('/', methods=['PUT', 'PATCH'])
+@authenticate(token_auth)
+@body(update_user_schema)
+@response(update_user_schema, 201)
 def update_user(args):
     """Update existing user"""
+    user = token_auth.current_user()
+    args['id'] = user.id
     return user_service.update_user(args)
