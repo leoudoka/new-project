@@ -347,8 +347,8 @@ class Recruiter(Updateable, db.Model):
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     scope: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
-    work_preference: so.Mapped[str] = so.mapped_column(sa.String(64))
-    contract_type: so.Mapped[str] = so.mapped_column(sa.String(64))
+    work_preference: so.Mapped[str] = so.mapped_column(sa.String(64), nullable=True)
+    contract_type: so.Mapped[str] = so.mapped_column(sa.String(64), nullable=True)
     org_id: so.Mapped[str] = so.mapped_column(sa.ForeignKey('organizations.id'), index=True)
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id), index=True)
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)

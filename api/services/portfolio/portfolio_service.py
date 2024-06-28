@@ -24,7 +24,11 @@ class PortfolioService(IPortfolio):
         return Portfolio.query \
                 .order_by(Portfolio.id.desc())
     
-    def get_portfolio_by_given_column_name(self, column_name, value):
+    def get_portfolio_by_user_id_or_404(self, user_id):
+        return db.session.scalar(Portfolio.query.filter_by(user_id=user_id)) or abort(404)
+    
+    # TODO: Not working effectively
+    def get_portfolio_by_given_column_name(self, column_name: str, value):
         if hasattr(Portfolio, column_name):
             column_name = getattr(Portfolio, column_name)
             return db.session.scalar(Portfolio.query.filter_by(column_name=value))

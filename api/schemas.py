@@ -108,7 +108,7 @@ class UserSchema(ma.SQLAlchemySchema):
             raise ValidationError('Email already exits.')
 
 
-class UpdateNewUserSchema(ma.Schema):
+class UserDetailsSchema(ma.Schema):
     id = ma.Integer(required=True)
     first_name = ma.String(required=False)
     last_name = ma.String(required=False)
@@ -119,6 +119,7 @@ class UpdateNewUserSchema(ma.Schema):
     mobile_number = ma.String(required=False)
     role = ma.String(required=False)
     country_id = ma.Integer(required=False)
+    org_id = ma.Integer(required=False)
     state_id = ma.Integer(required=False)
     country = ma.String(dump_only=True)
     state = ma.String(dump_only=True)
@@ -193,6 +194,9 @@ class PortfolioSchema(ma.Schema):
     photo = ma.File(required=False, validate=flask_ma_validate.FileSize(max="2 MiB"))
     resume_attachment = ma.String(dump_only=True)
     photo_attachment = ma.String(dump_only=True)
+    category = ma.String(dump_only=True)
+    experience = ma.String(dump_only=True)
+    career_level = ma.String(dump_only=True)
     user_id = ma.Integer(required=True)
     created_at = ma.DateTime(dump_only=True)
     updated_at = ma.DateTime(dump_only=True)
@@ -351,10 +355,11 @@ class RecruiterSchema(ma.Schema):
 
     id = ma.Integer(dump_only=True)
     scope = ma.String(required=False)
+    scope_attachment = ma.File(required=False, validate=flask_ma_validate.FileSize(max="2 MiB"))
     work_preference = ma.String(required=False)
     contract_type = ma.String(required=False)
     org_id = ma.Integer(required=False)
-    user_id = ma.Integer(dump_only=True)
+    user_id = ma.Integer(required=True)
     created_at = ma.DateTime(dump_only=True)
     updated_at = ma.DateTime(dump_only=True)
 

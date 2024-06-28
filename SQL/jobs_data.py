@@ -129,7 +129,6 @@ INDUSTRY_JOB_CAREER_LEVEL_DATA = [
     {"level": "Entry-level"},
     {"level": "Intermediate"},
     {"level": "Mid-level"},
-    {"level": "10-15 Years"},
     {"level": "Senior or executive-level"}
 ]
 

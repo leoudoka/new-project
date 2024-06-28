@@ -40,10 +40,12 @@ def get_portfolios():
     return portfolio_service.get_portfolios()
 
 
-@portfolio.route('/<int:id>', methods=['GET'])
+@portfolio.route('/me', methods=['GET'])
 @authenticate(token_auth)
 @response(portfolio_schema)
 @other_responses({404: 'Portfolio not found'})
-def get_portfolio_by_id_or_404(id):
+def get_portfolio_by_id_or_404():
     """Retrieve a portfolio by id"""
-    return portfolio_service.get_portfolio_by_id_or_404(id)
+    user = token_auth.current_user()
+    user_id = user.id
+    return portfolio_service.get_portfolio_by_user_id_or_404(user_id)
