@@ -32,23 +32,48 @@ class PortfolioService(IPortfolio):
     
     def create_portfolio(self, args: dict):
         try:
-            resume_to_upload = request.files.get('resume')
-            photo_to_upload = request.files.get('photo')
-            if resume_to_upload:
-                uploaded_resume = cloudinary.uploader.upload(resume_to_upload, folder='resume')
-                args['resume_attachment'] = uploaded_resume["secure_url"]
-                del args["resume"]
-            elif photo_to_upload:
-                uploaded_photo = cloudinary.uploader.upload(photo_to_upload, folder='profile')
-                args['photo_attachment'] = uploaded_photo["secure_url"]
-                del args["photo"]
-            portfolio_data = Portfolio(**args)
-            db.session.add(portfolio_data)
-            db.session.commit()
-            return portfolio_data
+            user_id = args.get('user_id')
+            if user_id:
+                portfolio_data_exists = db.session.scalar(Portfolio.query
+                                    .filter(Portfolio.user_id == user_id))
+                resume_to_upload = request.files.get('resume')
+                photo_to_upload = request.files.get('photo')
+                if resume_to_upload:
+                    uploaded_resume = cloudinary.uploader.upload(resume_to_upload, folder='resume')
+                    args['resume_attachment'] = uploaded_resume["secure_url"]
+                    del args["resume"]
+                if photo_to_upload:
+                    uploaded_photo = cloudinary.uploader.upload(photo_to_upload, folder='profile')
+                    args['photo_attachment'] = uploaded_photo["secure_url"]
+                    del args["photo"]
+
+                if portfolio_data_exists:
+                    portfolio = portfolio_data_exists.update(args)
+                else:
+                    portfolio = Portfolio(**args)
+                    db.session.add(portfolio)
+                db.session.commit()
+                return portfolio
+            abort(404)
         except Exception as e:
             db.session.rollback()
             raise e
+        
+    def patch_new_portfolio(self, args: dict):
+        try:
+            user_id = args.get('user_id')
+            if user_id:
+                portfolio = db.session.scalar(Portfolio.query
+                                        .filter(Portfolio.user_id == user_id))
+                if portfolio:
+                    portfolio.update(args)
+                    db.session.commit()
+                    return portfolio
+            abort(404)
+        except Exception as e:
+            db.session.rollback()
+            raise e
+
         
     def update_portfolio(self, args: dict):
         try:

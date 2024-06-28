@@ -32,11 +32,11 @@ class JobService(IJob):
 
     def get_job_categories(self):
         return JobCategory.query \
-                .order_by(JobCategory.id.desc())
+                .order_by(JobCategory.name.asc())
 
     def get_job_experiences(self):
         return JobExperience.query \
-                .order_by(JobExperience.id.desc())
+                .order_by(JobExperience.experience.asc())
 
     def get_job_career_levels(self):
         return JobCareerLevel.query \

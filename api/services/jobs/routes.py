@@ -47,42 +47,42 @@ def get_jobs():
 
 
 @jobs.route('/industries', methods=['GET'])
-@paginated_response(job_industries_schema)
+@response(job_industries_schema)
 def get_job_industries():
     """Retrieve all job industries"""
     return job_service.get_job_industries()
 
 
 @jobs.route('/categories', methods=['GET'])
-@paginated_response(jobs_categories_schema)
+@response(jobs_categories_schema)
 def get_job_categories():
     """Retrieve all job categories"""
     return job_service.get_job_categories()
 
 
 @jobs.route('/experiences', methods=['GET'])
-@paginated_response(job_experiences_schema)
+@response(job_experiences_schema)
 def get_job_experiences():
     """Retrieve all job experiences"""
     return job_service.get_job_experiences()
 
 
 @jobs.route('/career-levels', methods=['GET'])
-@paginated_response(jobs_career_levels_schema)
+@response(jobs_career_levels_schema)
 def get_job_career_levels():
     """Retrieve all job career level"""
     return job_service.get_job_career_levels()
 
 
 @jobs.route('/contract-types', methods=['GET'])
-@paginated_response(job_contract_types_schema)
+@response(job_contract_types_schema)
 def get_job_contract_types():
     """Retrieve all contract job types"""
     return job_service.get_job_contract_types()
 
 
 @jobs.route('/organizations', methods=['GET'])
-@paginated_response(job_orgs_schema)
+@response(job_orgs_schema)
 def get_job_organizations():
     """Retrieve all job organizations"""
     return job_service.get_job_organizations()

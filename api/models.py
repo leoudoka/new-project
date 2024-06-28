@@ -106,7 +106,7 @@ class User(UserMixin, Updateable, db.Model):
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
 
     tokens: so.WriteOnlyMapped['Token'] = so.relationship(back_populates='user')
-    address: so.WriteOnlyMapped['Address'] = so.relationship(back_populates='user')
+    address: so.Mapped['Address'] = so.relationship(back_populates='user')
     attachments: so.WriteOnlyMapped['Attachment'] = so.relationship(back_populates='user')
     employer: so.Mapped['Employer'] = so.relationship(
         foreign_keys='Employer.user_id', back_populates='user')
@@ -129,6 +129,14 @@ class User(UserMixin, Updateable, db.Model):
     def get_roles(self):
         return self.role
 
+    @property
+    def state(self):
+        return self.address.state.name
+    
+    @property
+    def country(self):
+        return self.address.country.name
+    
     @property
     def has_password(self):
         return self.password_harsh is not None
@@ -203,14 +211,25 @@ class Address(Updateable, db.Model):
 
     id: so.Mapped[int] = so.mapped_column(primary_key=True)
     address: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
-    state_id: so.Mapped[Optional[int]] = so.mapped_column(sa.ForeignKey('states.id'))
-    country_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('countries.id'))   
+    state_id: so.Mapped[Optional[int]] = so.mapped_column(sa.ForeignKey('states.id'), index=True)
+    country_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('countries.id'), index=True)   
     postal_code: so.Mapped[Optional[str]] = so.mapped_column(sa.String(8), nullable=True)
     user_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
 
     user: so.Mapped[User] = so.relationship(back_populates='address')
+    country: so.Mapped['Country'] = so.relationship(back_populates='addresses')
+    state: so.Mapped['State'] = so.relationship(back_populates='addresses')
+
+    @property
+    def user_state(self):
+        return self.state.name
+    
+    @property
+    def user_country(self):
+        return self.country.name
+    
 
     def __repr__(self):  # pragma: no cover
         return '<Address {}>'.format(self.address)
@@ -248,6 +267,7 @@ class Country(Updateable, db.Model):
     wikiDataId: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
 
     states: so.Mapped['State'] = so.relationship(back_populates='country')
+    addresses: so.Mapped['Address'] = so.relationship(back_populates='country')
 
     def __repr__(self):  # pragma: no cover
         return '<Country {}>'.format(self.name)
@@ -271,6 +291,7 @@ class State(Updateable, db.Model):
     wikiDataId: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
 
     country: so.Mapped[Country] = so.relationship(back_populates='states')
+    addresses: so.Mapped['Address'] = so.relationship(back_populates='state')
 
     @property
     def country_name(self):
@@ -292,7 +313,7 @@ class Portfolio(Updateable, db.Model):
     portfolio_link: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
     linkedin_link: so.Mapped[Optional[str]] = so.mapped_column(sa.String(255), nullable=True)
     job_category_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('job_categories.id'), index=True)
-    job_career_level_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('job_career_levels.id'))
+    job_career_level_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('job_career_levels.id'), nullable=True)
     job_experience_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('job_experiences.id'))
     resume_attachment: so.Mapped[str] = so.mapped_column(sa.String(255), nullable=True)
     photo_attachment: so.Mapped[str] = so.mapped_column(sa.String(255), nullable=True)
@@ -302,6 +323,8 @@ class Portfolio(Updateable, db.Model):
 
     user: so.Mapped[User] = so.relationship(back_populates='portfolio')
     job_category: so.Mapped['JobCategory'] = so.relationship(back_populates='portfolios')
+    job_experience: so.Mapped['JobExperience'] = so.relationship(back_populates='portfolio')
+    job_career_level: so.Mapped['JobCareerLevel'] = so.relationship(back_populates='portfolio')
 
     def __repr__(self):  # pragma: no cover
         return '<Portfolio {}>'.format(self.about)
@@ -309,6 +332,14 @@ class Portfolio(Updateable, db.Model):
     @property
     def category(self):
         return self.job_category.name
+    
+    @property
+    def experience(self):
+        return self.job_experience.experience
+    
+    @property
+    def career_level(self):
+        return self.job_career_level.level
 
 
 class Recruiter(Updateable, db.Model):
@@ -394,6 +425,8 @@ class JobCareerLevel(Updateable, db.Model):
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
 
+    portfolio: so.Mapped['Portfolio'] = so.relationship(back_populates='job_career_level')
+
     @staticmethod
     def generate_slug(slug):
         _slug = slugify(slug)
@@ -426,6 +459,8 @@ class JobExperience(Updateable, db.Model):
     created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
+
+    portfolio: so.Mapped['Portfolio'] = so.relationship(back_populates='job_experience')
 
     @staticmethod
     def generate_slug(slug):
@@ -462,7 +497,7 @@ class JobCategory(Updateable, db.Model):
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
 
     industry: so.Mapped['JobIndustry'] = so.relationship(back_populates='categories')
-    portfolios: so.WriteOnlyMapped['Portfolio'] = so.relationship(back_populates='job_category')
+    portfolios: so.Mapped['Portfolio'] = so.relationship(back_populates='job_category')
 
     @staticmethod
     def generate_slug(slug):

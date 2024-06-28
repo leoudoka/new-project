@@ -84,6 +84,8 @@ class UserSchema(ma.SQLAlchemySchema):
     mobile_number = ma.String(required=False)
     has_password = ma.Boolean(dump_only=True)
     last_seen = ma.auto_field(dump_only=True)
+    country = ma.String(dump_only=True)
+    state = ma.String(dump_only=True)
     created_at = ma.auto_field(dump_only=True)
     updated_at = ma.auto_field(dump_only=True)
 
@@ -108,12 +110,26 @@ class UserSchema(ma.SQLAlchemySchema):
 
 class UpdateNewUserSchema(ma.Schema):
     id = ma.Integer(required=True)
+    first_name = ma.String(required=False)
+    last_name = ma.String(required=False)
+    email = ma.String(required=False)
     username = ma.String(required=False)
     gender = ma.String(required=False)
     dob = ma.Date(required=False)
     mobile_number = ma.String(required=False)
+    role = ma.String(required=False)
     country_id = ma.Integer(required=False)
     state_id = ma.Integer(required=False)
+    country = ma.String(dump_only=True)
+    state = ma.String(dump_only=True)
+
+    @validates('email')
+    def validate_email(self, value):
+        user = token_auth.current_user()
+        old_email = user.email if user else None
+        if value != old_email and \
+                db.session.scalar(User.query.filter_by(email=value)):
+            raise ValidationError('Email already exits.')
 
 
 class UpdateUserSchema(UserSchema):
@@ -164,26 +180,44 @@ class PortfolioSchema(ma.Schema):
 
     id = ma.Integer(dump_only=True)
     about = ma.String(required=False)
-    hourly_rate = ma.String(required=True)
-    work_preference = ma.List(ma.String(), required=True)
-    job_industries = ma.List(ma.String(), required=True)
-    skills = ma.List(ma.String(), required=True)
+    hourly_rate = ma.String(required=False)
+    work_preference = ma.List(ma.String(), required=False)
+    job_industries = ma.List(ma.String(), required=False)
+    skills = ma.List(ma.String(), required=False)
     portfolio_link = ma.String(required=False)
     linkedin_link = ma.String(required=False)
     job_category_id = ma.Integer(required=True)
-    job_career_level_id = ma.Integer(required=True)
+    job_career_level_id = ma.Integer(required=False)
     job_experience_id = ma.Integer(required=True)
     resume = ma.File(required=True, validate=flask_ma_validate.FileSize(max="2 MiB"))
-    photo_attachment = ma.File(required=False, validate=flask_ma_validate.FileSize(max="2 MiB"))
+    photo = ma.File(required=False, validate=flask_ma_validate.FileSize(max="2 MiB"))
     resume_attachment = ma.String(dump_only=True)
     photo_attachment = ma.String(dump_only=True)
-    user_id = ma.Integer(dump_only=True)
+    user_id = ma.Integer(required=True)
     created_at = ma.DateTime(dump_only=True)
     updated_at = ma.DateTime(dump_only=True)
 
-# class UpdatePortfolioSchema(PortfolioSchema):
+class PatchPortfolioSchema(ma.Schema):
 
-#     user_id = ma.Integer(required=True)
+    id = ma.Integer(dump_only=True)
+    about = ma.String(required=False)
+    hourly_rate = ma.String(required=False)
+    work_preference = ma.List(ma.String(), required=False)
+    job_industries = ma.List(ma.String(), required=False)
+    skills = ma.List(ma.String(), required=False)
+    portfolio_link = ma.String(required=False)
+    linkedin_link = ma.String(required=False)
+    job_category_id = ma.Integer(required=False)
+    job_career_level_id = ma.Integer(required=False)
+    job_experience_id = ma.Integer(required=False)
+    resume_attachment = ma.String(dump_only=True)
+    photo_attachment = ma.String(dump_only=True)
+    category = ma.String(dump_only=True)
+    experience = ma.String(dump_only=True)
+    career_level = ma.String(dump_only=True)
+    user_id = ma.Integer(required=True)
+    created_at = ma.DateTime(dump_only=True)
+    updated_at = ma.DateTime(dump_only=True)
 
 class JobSchema(ma.Schema):
     class Meta:
