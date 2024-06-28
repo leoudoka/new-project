@@ -9,6 +9,10 @@ class IPortfolio(metaclass=ABCMeta):
 	@abstractmethod
 	def create_portfolio(self):
 		raise NotImplementedError
+	
+	@abstractmethod
+	def patch_new_portfolio(self):
+		raise NotImplementedError
 
 	@abstractmethod
 	def get_portfolio_by_id_or_404(self, id: int):
