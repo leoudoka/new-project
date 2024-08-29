@@ -90,20 +90,14 @@ class JobIndustryCategorySeeder(Seeder):
         self.priority = 3
 
     def run(self):
-        industry_job_categories = INDUSTRY_CATEGORY_DATA
-        for industry_name, job_categories in industry_job_categories.items():
-            industry = JobIndustry.query.filter_by(name=industry_name).first()
-            if not industry:
-                print(f"Industry '{industry_name}' not found, skipping job categories.")
-                continue
-
-            for job_category_name in job_categories:
-                slug = JobIndustry.generate_slug(job_category_name)
-                job_category = JobCategory(
-                    name=job_category_name, job_industry_id=industry.id,
-                    slug=slug, created_by=1
-                )
-                self.db.session.add(job_category)
+        job_categories = INDUSTRY_CATEGORY_DATA
+        for job_category in job_categories:
+            slug = JobIndustry.generate_slug(job_category)
+            job_category = JobCategory(
+                name=job_category,
+                slug=slug, created_by=1
+            )
+            self.db.session.add(job_category)
 
         self.db.session.commit()
 

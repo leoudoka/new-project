@@ -490,13 +490,11 @@ class JobCategory(Updateable, db.Model):
     name: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True)
     slug: so.Mapped[Optional[str]] = so.mapped_column(sa.String(100), index=True, unique=True)
     description: so.Mapped[Optional[str]] = so.mapped_column(sa.Text, nullable=True)
-    job_industry_id: so.Mapped[int] = so.mapped_column(sa.ForeignKey('job_industries.id'), index=True)
     status: so.Mapped[bool] = so.mapped_column(sa.Boolean, default=True)
     created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
 
-    industry: so.Mapped['JobIndustry'] = so.relationship(back_populates='categories')
     portfolios: so.Mapped['Portfolio'] = so.relationship(back_populates='job_category')
 
     @staticmethod
@@ -532,8 +530,6 @@ class JobIndustry(Updateable, db.Model):
     created_by: so.Mapped[int] = so.mapped_column(sa.ForeignKey(User.id))
     created_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
     updated_at: so.Mapped[datetime] = so.mapped_column(default=datetime.utcnow)
-
-    categories: so.WriteOnlyMapped['JobCategory'] = so.relationship(back_populates='industry')
 
     @staticmethod
     def generate_slug(slug):
