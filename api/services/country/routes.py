@@ -16,7 +16,7 @@ states_schema = StateSchema(many=True)
 
 @country.route('/', methods=['GET'])
 @response(countries_schema)
-def get_portfolios():
+def get_countries():
     """Retrieve all countries"""
     return country_service.get_countries()
 
@@ -24,9 +24,16 @@ def get_portfolios():
 @country.route('/<int:id>', methods=['GET'])
 @response(country_schema)
 @other_responses({404: 'Country not found'})
-def get_portfolio_by_id_or_404(id):
+def get_country_by_id_or_404(id):
     """Retrieve a country by id"""
     return country_service.get_country_by_id_or_404(id)
+
+@country.route('/<int:countryId>/states', methods=['GET'])
+@response(states_schema)
+@other_responses({404: 'States in country not found'})
+def get_states_by_country_id(countryId):
+    """Retrieve a states by country id"""
+    return country_service.get_states_by_country_id(countryId)
 
 @country.route('/states', methods=['GET'])
 @response(states_schema)

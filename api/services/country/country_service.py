@@ -21,6 +21,12 @@ class CountryService(ICountry):
         return State.query \
                 .order_by(State.id.asc())
     
+    def get_states_by_country_id(self, country_id):
+        return State.query \
+                .filter_by(country_id=country_id) \
+                .order_by(State.name.asc())\
+                .all()
+    
     def get_given_column_name(self, model, column_name, value):
         if hasattr(model, column_name):
             column_name = getattr(model, column_name)
