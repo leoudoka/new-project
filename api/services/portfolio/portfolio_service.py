@@ -20,9 +20,55 @@ class PortfolioService(IPortfolio):
     def get_portfolio_by_id_or_404(self, id):
         return db.session.get(Portfolio, id) or abort(404)
     
-    def get_portfolios(self):
-        return Portfolio.query \
-                .order_by(Portfolio.id.desc())
+    def get_portfolios(self, args: dict):
+        query = Portfolio.query
+
+        job_role = args['job_role']
+        industry = args['industry']
+        experince = args['experince']
+        contract_type = args['contract_type']
+        budget = args['budget']
+                
+        if job_role is not None:
+            query = query.filter(Portfolio.job_category_id == job_role)
+        if industry is not None:
+            query = query.filter(Portfolio.job_industries.contains(industry))
+        if experince is not None:
+            query = query.filter(Portfolio.job_experience_id == experince)
+        if contract_type is not None:
+            query = query.filter(Portfolio.work_preference.contains(contract_type))
+        if budget is not None:
+            query = query.filter(Portfolio.hourly_rate == budget)
+        
+        return query.order_by(Portfolio.id.desc())
+    
+
+    def search_portfolios(self, args: dict):
+        query = Portfolio.query
+
+        job_role = args['job_role']
+        industry = args['industry']
+        experince = args['experince']
+        contract_type = args['contract_type']
+        budget = args['budget']
+                
+        if job_role is not None:
+            query = query.filter(
+                Portfolio.job_category_id.ilike(f'%{job_role}%'))
+        if industry is not None:
+            query = query.filter(
+                Portfolio.job_industries.icontains(f'%{industry}%', autoescape=True))
+        if experince is not None:
+            query = query.filter(
+                Portfolio.job_experience_id.ilike(f'%{experince}%'))
+        if contract_type is not None:
+            query = query.filter(
+                Portfolio.work_preference.icontains(f'%{contract_type}%', autoescape=True))
+        if budget is not None:
+            query = query.filter(
+                Portfolio.hourly_rate.ilike(f'%{budget}%'))
+        
+        return query.order_by(Portfolio.id.desc())
     
     def get_portfolio_by_user_id_or_404(self, user_id):
         return db.session.scalar(Portfolio.query.filter_by(user_id=user_id)) or abort(404)
